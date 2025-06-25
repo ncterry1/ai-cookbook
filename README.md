@@ -64,12 +64,12 @@ print(resp.choices[0].message.content)
 * Model decides when to call it, supplies the query (e.g. “return policy”), and you feed back the matching JSON snippets along with metadata (source IDs, etc.).
 - Builds in retriever-augmented generation (RAG) without extra libraries.
 
-## 3. Workflow Patterns (“Augmented LLM” in Action)
+# 3. Workflow Patterns (“Augmented LLM” in Action)
 Dave builds three higher-order orchestrations by combining the above primitives:
 
-# A. Prompt Chaining (05_prompt_chaining.py)
-## Goal: Break a multifaceted user request into a clear sequence of LLM calls, each responsible for a narrow sub-task.
-## Flow:
+## A. Prompt Chaining (05_prompt_chaining.py)
+### Goal: Break a multifaceted user request into a clear sequence of LLM calls, each responsible for a narrow sub-task.
+### Flow:
 
 ### Gate
 - Ask: “Is this a calendar-event request?”
@@ -85,7 +85,7 @@ Dave builds three higher-order orchestrations by combining the above primitives:
 * Each step has its own tailored prompt and data model → easier to debug and refine.
 * Human-in-the-loop or conditional gating can be inserted between steps.
 
-# B. Routing (06_routing.py)
+## B. Routing (06_routing.py)
 ### Goal: Dynamically choose different handlers based on intent (e.g., new vs. modify).
 ### Flow:
 - Single entry function processes the raw user message.
@@ -97,12 +97,12 @@ Dave builds three higher-order orchestrations by combining the above primitives:
 
 * Keeps your code modular: add new branches (cancellations, inquiries, etc.) by adding new LLM schemas + handlers.
 
-# C. Parallelization (07_parallelization.py)
-## Goal: Reduce latency for independent checks by firing them concurrently.
-## When to use
+## C. Parallelization (07_parallelization.py)
+### Goal: Reduce latency for independent checks by firing them concurrently.
+### When to use
 - Safety/guardrail validations: e.g., “is it a calendar request?” and “does it attempt prompt injection?”
 - These checks don’t depend on each other’s output.
-## Implementation
+### Implementation
 - Use Python’s async/await with the OpenAI async client.
 -  Kick off both LLM calls simultaneously, then await them together.
 -  Aggregate results: if either fails (e.g. security check flags a risk), short-circuit the flow.
