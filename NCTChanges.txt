@@ -1,0 +1,10 @@
+Note this is imported from:
+    https://github.com/daveebbelaar/ai-cookbook
+
+Changes to repo:
+    Created/work from new branch:  nctbranch
+    Added \TESTING\test.py
+    Adjusted .env to hold personal openai key
+    Verified gitignore contains .env
+    Adjusted README to be written summary of ai-cookbook
+    
