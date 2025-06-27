@@ -147,3 +147,207 @@ Dave builds three higher-order orchestrations by combining the above primitives:
 * “Walk me through the function-calling loop in 03_tools_function_calling.py.”
 * “Explain how the routing logic picks ‘new’ vs. ‘modify.’”
 
+
+# Installation instructions
+## This is a broad overview on setting up a system to use python, vscode, jupyter, openai and other parts. These are just for initial setup of the system. There are many more actions to add/know
+
+### Here’s the complete, step-by-step setup guide for your ai-cookbook project on Windows—from installing Python all the way through VS Code, Jupyter, OpenAI, and interactive workflows. I’ve clearly marked when you should be outside or inside your virtual environment (.venv).
+
+# 1. Install Python 3.11 (Outside any venv)
+Open an elevated PowerShell (“Run as Administrator”).
+
+### Update WinGet sources:
+powershell
+> winget source update
+> Install Python system-wide:
+
+powershell
+> winget install --id Python.Python.3.11 --exact --scope machine
+
+### Verify (in a new Git CMD or PowerShell):
+powershell
+* python --version   # ⇒ Python 3.11.x  
+* pip --version      # ⇒ pip 23.x.x
+### Upgrade pip & friends:
+powershell
+- python -m pip install --upgrade pip setuptools wheel
+All done outside any virtual environment.
+
+# 2. Create & Activate Your Project’s venv
+Your repo path:
+makefile
+- C:\Users\ncterry\Documents\git\ai-cookbook
+### Open Git CMD (or PowerShell) and cd there:
+cmd
+> cd /d C:\Users\ncterry\Documents\git\ai-cookbook
+
+### Create the venv:
+cmd
+> python -m venv .venv
+
+### Activate it:
+cmd
+> .\.venv\Scripts\activate
+You’ll now see (.venv) at your prompt.
+From here on, you’re inside the venv until you run deactivate.
+
+# 3. Install Core Python Libraries (Inside venv)
+cmd
+> pip install \
+  openai \
+  python-dotenv \
+  requests \
+  langchain \
+  pydantic \
+  aiohttp \
+  jupyter \
+  ipykernel
+Then freeze for reproducibility:
+
+cmd
+> pip freeze > requirements.txt
+
+# 4. VS Code Extensions & Interpreter
+Open VS Code in your project:
+cmd
+> code .
+
+### Install extensions in VSCode (Ctrl + Shift + X):
+* Python (ms-python.python)
+* Pylance (ms-python.vscode-pylance)
+* Jupyter (ms-tools-ai.jupyter)
+* GitLens (eamodio.gitlens)
+* GitHub Pull Requests & Issues (GitHub.vscode-pull-request-github)
+* GitHub Copilot (GitHub.copilot.vscode)
+* Docker (ms-azuretools.vscode-docker) (optional)
+* Remote – SSH (ms-vscode-remote.remote-ssh) (optional)
+
+Select the Interpreter
+- Ctrl + Shift + P → Python: Select Interpreter → choose
+makefile
+- C:\Users\ncterry\Documents\git\ai-cookbook\.venv\Scripts\python.exe
+
+# 5. Workspace Settings (.vscode/settings.json)
+Create or overwrite:
+makefile
+- C:\Users\ncterry\Documents\git\ai-cookbook\.vscode\settings.json
+with:
+(jsonc)
+
+{
+  // === Interpreter & auto-activate ===
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+
+  // === Format on save & Black ===
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "python.formatting.provider": "black",
+  "python.formatting.blackArgs": ["--line-length", "88"],
+
+  // === Organize imports (isort) on save ===
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true
+  },
+
+  // === Linting ===
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.flake8Args": [
+    "--max-line-length=88",
+    "--ignore=E203"
+  ],
+
+  // === Type checking ===
+  "python.linting.mypyEnabled": true,
+  "python.linting.mypyArgs": [
+    "--ignore-missing-imports"
+  ]
+}
+After saving, Reload Window (Ctrl + Shift + P → Developer: Reload Window).
+
+# 6. Environment Variables & Initialization
+Create .env at project root:
+bash
+> C:\Users\ncterry\Documents\git\ai-cookbook\.env
+
+Populate with only your key:
+ini
+* OPENAI_API_KEY=sk-XXXXXXXXXXXXXXXXXXXXXXXX
+Ensure .env is in your .gitignore.
+
+In every Python file that calls the API (e.g. src/main.py):
+python
+- from dotenv import load_dotenv
+- load_dotenv()
+- from openai import OpenAI
+- client = OpenAI()  # picks up OPENAI_API_KEY
+
+# 7. Jupyter Notebook Integration (Inside venv)
+Register your venv as a Jupyter kernel (once):
+cmd
+python -m ipykernel install --user --name ai-cookbook --display-name "Python (ai-cookbook)"
+Reload VS Code (Ctrl + Shift + P → Developer: Reload Window).
+
+### Create your notebook, example in \TESTING\analysis.ipynb.
+Select the kernel (top-right of the notebook editor):
+Click the kernel name → Python environments… → choose “Python (ai-cookbook)” or “.venv (Python 3.11.x)”.
+
+### Run a cell:
+You can establish a cell in just a .py file by adding '# %%' then all python code in the file will be that cell until you insert the next # %% (more shown below)
+Cells show as gray blocks labeled In [ ]:.
+
+In an .ipynb file, Click inside, type code (e.g. import sys; print(sys.executable)), then Run Cell ▶️ or press Shift + Enter.
+
+Confirm the output path is your .venv\Scripts\python.exe.
+
+8. Interactive .py Execution (Inside venv)
+To run sections of a .py file with checkmarks in the right panel:
+Open 1-basic.py (or any script) in the editor.
+
+Annotate with cell markers:
+python
+- # %%
+- import openai
+- print("Cell 1")
+
+- # %%
+- response = client.chat.completions.create(...)
+- print(response)
+Open the Interactive window:
+
+Run Cell gutter icons appear next to # %%.
+Click ▶️ on a cell or run Run Current File in Interactive Window from the top-right menu.
+See green checkmarks for executed cells and output in the Interactive pane.
+Ensure the Interactive window’s kernel is your .venv\Scripts\python.exe.
+
+9. Obtaining & Managing Your OpenAI API Key (Outside venv)
+* Visit https://platform.openai.com/ → log in.
+* Under Billing, add a payment method.
+* Under API Keys, click Create new secret key, copy sk-… into your .env.
+* Use the dashboard’s usage limits to cap your spend.
+
+10. Cost Estimation & Example Usage
+* Model	Prompt/1K	Completion/1K
+* gpt-3.5-turbo	$0.0015	$0.002
+* gpt-4 (8K context)	$0.03	$0.06
+
+Light-use example: 500 short Q&As (~15 tokens each)
+text
+* 500 × (~0.015K × $0.002 avg) ≈ $0.013/month
+
+venv Quick–Recap
+Outside venv: Python & winget install, VS Code launch, API key provisioning.
+
+Inside venv:
+> pip install …
+> ipykernel install
+> pip freeze
+
+Exit venv:
+cmd
+> deactivate
+
+You’re now fully set up—VS Code, Python, Jupyter notebooks, interactive scripting, OpenAI API access, linting, formatting, Git/Copilot, and cost controls. 
