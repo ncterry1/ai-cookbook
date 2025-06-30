@@ -40,7 +40,7 @@ def get_weather(latitude: float, longitude: float) -> dict:
 # ==========================================================
 # ==========================================================
 # %%
-# SECTION: Register Tools with the LLM
+# SECTION: Register tools with the LLM
 # -------------------------------------------------------------- 
 """
 Here's what's happening in the “tools” block:
@@ -79,7 +79,7 @@ print("tools = ", tools) # this simply prints the structure to the screen when w
 # ==========================================================
 # ==========================================================
 # %%
-# SECTION: Build Initial Chat Messages (Prompt Design)
+# SECTION: Build Initial Chat messages (Prompt Design)
 # --------------------------------------------------------------
 '''
 ---System message---
@@ -125,7 +125,7 @@ Because you asked about “Paris,” the model internally retrieves (from its tr
 # %%
 # SECTION: First LLM Call — Model May Invoke Our Tool
 # --------------------------------------------------------------
-completion = client.chat.completions.create(
+completion = client.chat.completions.create( 
     model="gpt-4o",
     messages=messages,
     tools=tools,   # We hand over our “tools” definition here
@@ -247,11 +247,11 @@ name =  get_weather
 
 args =  {'latitude': 48.8566, 'longitude': 2.3522}
 
-messages =  [{'role': 'system', 'content': 'You are a helpful weather assistant.'}, {'role': 'user', 'content': "What's the weather like in Paris today?"}, ChatCompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatCompletionMessageToolCall(id='call_6eTHcBl6VVHKyyOkVPzDej94', function=Function(arguments='{"latitude":48.8566,"longitude":2.3522}', name='get_weather'), type='function')]), {'role': 'tool', 'tool_call_id': 'call_6eTHcBl6VVHKyyOkVPzDej94', 'content': '{"time": "2025-06-27T16:15", "interval": 900, "temperature_2m": 29.5, "wind_speed_10m": 10.3}'}]
+messages =  [{'role': 'system', 'content': 'You are a helpful weather assistant.'}, {'role': 'user', 'content': "What's the weather like in Paris today?"}, ChatcompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatcompletionMessageToolCall(id='call_6eTHcBl6VVHKyyOkVPzDej94', function=Function(arguments='{"latitude":48.8566,"longitude":2.3522}', name='get_weather'), type='function')]), {'role': 'tool', 'tool_call_id': 'call_6eTHcBl6VVHKyyOkVPzDej94', 'content': '{"time": "2025-06-27T16:15", "interval": 900, "temperature_2m": 29.5, "wind_speed_10m": 10.3}'}]
 
 result =  {'time': '2025-06-27T16:15', 'interval': 900, 'temperature_2m': 29.5, 'wind_speed_10m': 10.3}
 
-messages =  [{'role': 'system', 'content': 'You are a helpful weather assistant.'}, {'role': 'user', 'content': "What's the weather like in Paris today?"}, ChatCompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatCompletionMessageToolCall(id='call_6eTHcBl6VVHKyyOkVPzDej94', function=Function(arguments='{"latitude":48.8566,"longitude":2.3522}', name='get_weather'), type='function')]), {'role': 'tool', 'tool_call_id': 'call_6eTHcBl6VVHKyyOkVPzDej94', 'content': '{"time": "2025-06-27T16:15", "interval": 900, "temperature_2m": 29.5, "wind_speed_10m": 10.3}'}]
+messages =  [{'role': 'system', 'content': 'You are a helpful weather assistant.'}, {'role': 'user', 'content': "What's the weather like in Paris today?"}, ChatcompletionMessage(content=None, refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=[ChatcompletionMessageToolCall(id='call_6eTHcBl6VVHKyyOkVPzDej94', function=Function(arguments='{"latitude":48.8566,"longitude":2.3522}', name='get_weather'), type='function')]), {'role': 'tool', 'tool_call_id': 'call_6eTHcBl6VVHKyyOkVPzDej94', 'content': '{"time": "2025-06-27T16:15", "interval": 900, "temperature_2m": 29.5, "wind_speed_10m": 10.3}'}]
 
     '''
     # Full code in for loop ^^^  Notes vvv
@@ -370,7 +370,7 @@ response (a natrual language summary like It's 18 degrees C and sunny in Paris t
 completion_2 = client.beta.chat.completions.parse(
     model="gpt-4o",
     messages=messages,          # All prior messages + tool results
-    tools=tools,                # Tools still available if needed again
+    tools=tools,                # tools still available if needed again
     response_format=WeatherResponse,  # Parse into our Pydantic model
 )
 
@@ -381,7 +381,7 @@ This tells the SDK:
 - Give me a final answer, structured according to WeatherResponse.
 """
 """
-completion_2 =  ParsedChatCompletion[WeatherResponse](id='chatcmpl-Bn6FcogOLsHaXMa4FhGYbPHa0RNZv', choices=[ParsedChoice[WeatherResponse](finish_reason='stop', index=0, logprobs=None, message=ParsedChatCompletionMessage[WeatherResponse](content='{"temperature":29.5,"response":"The current temperature in Paris is 29.5°C. It\'s quite warm today, with a light breeze around 10.3 km/h."}', refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=None, parsed=WeatherResponse(temperature=29.5, response="The current temperature in Paris is 29.5°C. It's quite warm today, with a light breeze around 10.3 km/h.")))], created=1751041800, model='gpt-4o-2024-08-06', object='chat.completion', service_tier='default', system_fingerprint='fp_07871e2ad8', usage=CompletionUsage(completion_tokens=44, prompt_tokens=211, total_tokens=255, completion_tokens_details=CompletionTokensDetails(accepted_prediction_tokens=0, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=0), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))
+completion_2 =  ParsedChatcompletion[WeatherResponse](id='chatcmpl-Bn6FcogOLsHaXMa4FhGYbPHa0RNZv', choices=[ParsedChoice[WeatherResponse](finish_reason='stop', index=0, logprobs=None, message=ParsedChatcompletionMessage[WeatherResponse](content='{"temperature":29.5,"response":"The current temperature in Paris is 29.5°C. It\'s quite warm today, with a light breeze around 10.3 km/h."}', refusal=None, role='assistant', annotations=[], audio=None, function_call=None, tool_calls=None, parsed=WeatherResponse(temperature=29.5, response="The current temperature in Paris is 29.5°C. It's quite warm today, with a light breeze around 10.3 km/h.")))], created=1751041800, model='gpt-4o-2024-08-06', object='chat.completion', service_tier='default', system_fingerprint='fp_07871e2ad8', usage=completionUsage(completion_tokens=44, prompt_tokens=211, total_tokens=255, completion_tokens_details=completionTokensDetails(accepted_prediction_tokens=0, audio_tokens=0, reasoning_tokens=0, rejected_prediction_tokens=0), prompt_tokens_details=PromptTokensDetails(audio_tokens=0, cached_tokens=0)))
 
 """
 
@@ -402,5 +402,3 @@ Assistant says: The current temperature in Paris is 25.5°C with a wind speed of
 # ==========================================================
 # ==========================================================
 # ==========================================================
-
-# %%
