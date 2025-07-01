@@ -1,11 +1,10 @@
-# %%
-# --------------------------------------------------------------
-# SUMMARY:
+
+# -------------------------------------------------------------
 # This script sends a chat prompt to the OpenAI API asking for 
 # a limerick about Python. It uses the GPT-4o model and prints 
 # the model's response. Each section is isolated using `# %%` 
 # to allow independent execution.
-# --------------------------------------------------------------
+# ------------------------------------------------------------
 
 # %% 
 # Step 0: Load the operating system module to access environment variables
