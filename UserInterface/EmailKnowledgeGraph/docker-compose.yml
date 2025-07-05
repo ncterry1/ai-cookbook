@@ -1,0 +1,46 @@
+
+# docker-compose.yml
+# This YAML defines three services:
+# neo4j: Runs the official neo4j:5 container, exposing ports 7474 (web UI) and 7687 (Bolt).
+# ingest: Builds from ./ingest/Dockerfile, mounts ./emails/ for raw data, and loads into Neo4j.
+# gui: Builds from ./gui/Dockerfile, runs ai_chat_gui.py in isolation.
+# Also defines volumes (neo4j_data, neo4j_logs) to persist DB data.
+# This YAML file (YAML format) defines and orchestrates all three services: Neo4j, ingest, and GUI. Save this as docker-compose.yml in your project root.
+
+version: '3.8'
+services:
+  neo4j:
+    image: neo4j:5
+    container_name: neo4j
+    environment:
+      - NEO4J_AUTH=neo4j/password123
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    ports:
+      - "7474:7474"  # Browser UI
+      - "7687:7687"  # Bolt protocol
+
+  ingest:
+    build: ./ingest
+    depends_on:
+      - neo4j
+    environment:
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=password123
+    volumes:
+      - ./emails:/app/emails  # mount raw .eml or .json files
+
+  gui:
+    build: ./gui
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    depends_on:
+      - neo4j
+    ports:
+      - "5000:5000"   # if GUI served via web, otherwise skip
+
+volumes:
+  neo4j_data:
+  neo4j_logs:

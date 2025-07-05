@@ -20,8 +20,7 @@ def run(prompt: str) -> str:
     Run a data analysis prompt by instructing the model to analyze provided data.
 
     Args:
-        prompt (str): The data or query to analyze. Can include CSV tables, JSON blocks,
-                      numeric lists, or natural-language descriptions of data.
+        prompt (str): The data or query to analyze. Can include CSV tables, JSON blocks, numeric lists, or natural-language descriptions of data.
     Returns:
         str: The model's analysis and insights.
     """
