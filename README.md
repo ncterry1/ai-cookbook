@@ -217,9 +217,9 @@ Tip: In VS Code’s settings, point the Python: Interpreter to your project’s 
 
 # 4. Create & Activate a Virtual Environment
 ### bash
-  >  python3 -m venv .venv
-  > source .venv/bin/activate
-  > pip install --upgrade pip
+>  python3 -m venv .venv
+> source .venv/bin/activate
+> pip install --upgrade pip
   
 After this, in VS Code select .venv/bin/python as your interpreter.
 
