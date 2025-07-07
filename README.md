@@ -152,15 +152,15 @@ Dave builds three higher-order orchestrations by combining the above primitives:
 ## This is a broad overview on setting up a system to use python, vscode, jupyter, openai and other parts. These are just for initial setup of the system. There are many more actions to add/know
 
 
-#############################################################
-################# Ubuntu ####################################
-#############################################################
-Here’s a step-by-step checklist to get a fresh Ubuntu VM ready for your AI Chat GUI (initially using OpenAI’s API) and comfortable to develop in VS Code.
+# ##############################
+# ################ Ubuntu ######
+# ###############################
+## Here’s a step-by-step checklist to get a fresh Ubuntu VM ready for your AI Chat GUI (initially using OpenAI’s API) and comfortable to develop in VS Code.
 
-1. System Update & Core Tools
+# 1. System Update & Core Tools
 Open a terminal and run:
 
-bash
+### bash
   sudo apt update && sudo apt upgrade -y
   sudo apt install -y \
       python3 \
@@ -177,14 +177,14 @@ python3-tk to ensure Tkinter GUI support
 git, curl for source control and downloads
 build-essential, libssl-dev, libffi-dev covers native builds some packages may need
 
-2. Install & Configure VS Code
+# 2. Install & Configure VS Code
 A. Install VS Code
 Either via Snap:
-bash
+### bash
   sudo snap install code --classic
 Or via Microsoft’s APT repo:
 
-bash
+### bash
   curl https://packages.microsoft.com/keys/microsoft.asc \
     | gpg --dearmor > microsoft.gpg
   sudo install -o root -g root -m 644 microsoft.gpg \
@@ -193,6 +193,7 @@ bash
     > /etc/apt/sources.list.d/vscode.list'
   sudo apt update
   sudo apt install -y code
+  
 B. Recommended Extensions
 Once VS Code is open, install these from the Extensions pane:
 
@@ -207,22 +208,22 @@ YAML (redhat.vscode-yaml)
 
 Tip: In VS Code’s settings, point the Python: Interpreter to your project’s .venv/bin/python after you create it below.
 
-3. Clone & Prepare the Project
-bash
-Copy
-Edit
-cd ~
-git clone https://github.com/daveebbelaar/ai-cookbook.git
-cd ai-cookbook
-4. Create & Activate a Virtual Environment
-bash
+#3. Clone & Prepare the Project
+### bash
+  cd ~
+  git clone https://github.com/daveebbelaar/ai-cookbook.git
+  cd ai-cookbook
+
+# 4. Create & Activate a Virtual Environment
+### bash
   python3 -m venv .venv
   source .venv/bin/activate
   pip install --upgrade pip
+  
 After this, in VS Code select .venv/bin/python as your interpreter.
 
-5. Install Python Dependencies
-bash
+# 5. Install Python Dependencies
+### bash
   pip install \
     openai \
     reportlab \
@@ -235,33 +236,33 @@ python-dotenv: Load .env automatically
 
 If you later swap to a local LLaMA backend, you’ll also install one of:
 
-bash
+### bash
   pip install llama-cpp-python
 # —or—
   pip install transformers torch accelerate
-6. Configure Your OpenAI Key
+  
+# 6. Configure Your OpenAI Key
 In the project root create a file named .env containing:
-
-bash
+### bash
   OPENAI_API_KEY="sk-…your key…"
 Ensure your GUI script loads it (you have the python-dotenv import commented—just uncomment those two lines).
 
-7. Prepare Icons
+# 7. Prepare Icons
 Make sure your lock_icon.png and hourglass_icon.png live alongside ai_chat_gui_Ubuntu.py. The code will automatically load them at runtime for your window icon and “Thinking…” placeholder.
 
-8. Launching the App
+# 8. Launching the App
 With the virtualenv active, from project root run:
 
-bash
+### bash
   python UserInterface/EmailKnowledgeGraph/gui/ai_chat_gui_Ubuntu.py
 Or wherever you’ve placed your GUI script.
 
-9. VS Code Debug Configuration (Optional)
+# 9. VS Code Debug Configuration (Optional)
 To step through your code:
 
 Open .vscode/launch.json (create it if missing) with:
 
-jsonc
+### jsonc
 {
   "version": "0.2.0",
   "configurations": [
@@ -278,18 +279,17 @@ jsonc
 Select “Python: GUI” in the Debug panel and hit ▶️.
 
 Recap of Terminal Commands
-bash
+### bash
 # System prep
   sudo apt update && sudo apt upgrade -y
   sudo apt install -y python3 python3-venv python3-pip python3-tk git curl build-essential libssl-dev libffi-dev
 
-# VS Code (snap)
+## VS Code (snap)
   sudo snap install code --classic
 
-# Or VS Code (APT)
-# [see detailed steps above]
+## Or VS Code (APT) [see detailed steps above]
 
-# Project setup
+## Project setup
   git clone https://github.com/daveebbelaar/ai-cookbook.git
   cd ai-cookbook
   python3 -m venv .venv
@@ -297,16 +297,16 @@ bash
   pip install --upgrade pip
   pip install openai reportlab python-dotenv
 
-# (Optional for local LLaMA)
-# pip install llama-cpp-python
+## (Optional for local LLaMA)
+   pip install llama-cpp-python
 # or
-# pip install transformers torch accelerate
+   pip install transformers torch accelerate
 That should give you a fully functional Ubuntu dev VM ready to run and develop your AI Chat GUI with OpenAI—and later pivot to a local LLaMA model if desired.
-#############################################################
-################# Ubuntu Above ##############################
-#############################################################
-################# Windows Below #############################
-#############################################################
+## ################################
+## ############### Ubuntu Above ###
+## ################################
+## ############### Windows Below ###
+## #################################
 ### Here’s the complete, step-by-step setup guide for your ai-cookbook project on Windows—from installing Python all the way through VS Code, Jupyter, OpenAI, and interactive workflows. I’ve clearly marked when you should be outside or inside your virtual environment (.venv).
 
 # 1. Install Python 3.11 (Outside any venv)
