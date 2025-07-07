@@ -173,10 +173,11 @@ Open a terminal and run:
       build-essential \
       libssl-dev \
       libffi-dev
-python3-venv & pip for virtual environments
-python3-tk to ensure Tkinter GUI support
-git, curl for source control and downloads
-build-essential, libssl-dev, libffi-dev covers native builds some packages may need
+
+### python3-venv & pip for virtual environments
+### python3-tk to ensure Tkinter GUI support
+### git, curl for source control and downloads
+### build-essential, libssl-dev, libffi-dev covers native builds some packages may need
 
 # 2. Install & Configure VS Code
 A. Install VS Code
