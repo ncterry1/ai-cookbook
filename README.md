@@ -196,17 +196,16 @@ Or via Microsoft’s APT repo:
   sudo apt update
   sudo apt install -y code
   
-B. Recommended Extensions
+## B. Recommended Extensions
 Once VS Code is open, install these from the Extensions pane:
-
-Python (ms-python.python) & Pylance
-GitLens (eamodio.gitlens)
-Docker (ms-azuretools.vscode-docker)
-GitHub Copilot & Copilot Chat
-GitHub Pull Requests (GitHub.vscode-pull-request-github)
-Continue — AI code assistant (adammaras.continue)
-Jupyter suite (ms-python.jupyter, jupyter-keymap, jupyter-cell-tags, jupyter-notebook-renderers, jupyter-slideshow)
-YAML (redhat.vscode-yaml)
+### Python (ms-python.python) & Pylance
+### GitLens (eamodio.gitlens)
+### Docker (ms-azuretools.vscode-docker)
+### GitHub Copilot & Copilot Chat
+### GitHub Pull Requests (GitHub.vscode-pull-request-github)
+### Continue — AI code assistant (adammaras.continue)
+### Jupyter suite (ms-python.jupyter, jupyter-keymap, jupyter-cell-tags, jupyter-notebook-renderers, jupyter-slideshow)
+### YAML (redhat.vscode-yaml)
 
 Tip: In VS Code’s settings, point the Python: Interpreter to your project’s .venv/bin/python after you create it below.
 
