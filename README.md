@@ -218,38 +218,35 @@ Tip: In VS Code’s settings, point the Python: Interpreter to your project’s 
 # If the remote branch 'nctbranch' already exists:
 * git fetch origin
 * git checkout -b nctbranch origin/nctbranch
-
-If you get The “permission denied” on checkout means Git can’t write into your working tree (or .git/) because of file‐system permissions. Let’s fix that:
+* ---If you get The “permission denied” on checkout means Git can’t write into your working tree (or .git/) because of file‐system permissions. Let’s fix that:
 
 Make sure you own the repo directory 
 From inside ~/Desktop/ai-cookbook, do: 
 ### bash
 * sudo chown -R "$(whoami):$(whoami)" .
-
-This makes you the owner of every file and folder in the repo.
+* ---This makes you the owner of every file and folder in the repo.
 
 Ensure you have read/write permissions 
 Still in ai-cookbook, run:
 
 ### bash
 * chmod -R u+rwX .
-This gives your user read/write on files and enter (execute) on folders.
+* ---This gives your user read/write on files and enter (execute) on folders.
 
 Tell Git this directory is safe (if you haven’t already):
 
 ### bash
 * git config --global --add safe.directory "$(pwd)"
-Fetch and check out the branch
+* ---Fetch and check out the branch
 
 ### bash
 * git fetch origin
 * git checkout --track origin/nctbranch
-  
-That should now succeed without permission errors.
-Pull the latest commits
+* ---That should now succeed without permission errors.
+* ---Pull the latest commits
 ### bash
-* git pull 
-From here on out your nctbranch will track origin/nctbranch and you can switch, pull, and push normally.
+* git pull
+* From here on out your nctbranch will track origin/nctbranch and you can switch, pull, and push normally.
 
 
 # Otherwise, create it locally and push:
@@ -261,8 +258,7 @@ From here on out your nctbranch will track origin/nctbranch and you can switch, 
 * sudo python3 -m venv .venv
 * source .venv/bin/activate
 * sudo pip install --upgrade pip
-  
-After this, in VS Code select .venv/bin/python as your interpreter.
+* --- After this, in VS Code select .venv/bin/python as your interpreter.
 
 # 5. Install Python Dependencies
 ### bash
@@ -274,7 +270,6 @@ openai: Cloud API client
 
 reportlab: PDF export
 python-dotenv: Load .env automatically
-
 If you later swap to a local LLaMA backend, you’ll also install one of:
 
 ### bash
@@ -283,10 +278,10 @@ If you later swap to a local LLaMA backend, you’ll also install one of:
 *  pip install transformers torch accelerate
   
 # 6. Configure Your OpenAI Key
-In the project root create a file named .env containing:
+---In the project root create a file named .env containing:
 ### bash
 *  OPENAI_API_KEY="sk-…your key…"
-Ensure your GUI script loads it (you have the python-dotenv import commented—just uncomment those two lines).
+*  ---Ensure your GUI script loads it (you have the python-dotenv import commented—just uncomment those two lines).
 
 # 7. Prepare Icons
 Make sure your lock_icon.png and hourglass_icon.png live alongside ai_chat_gui_Ubuntu.py. The code will automatically load them at runtime for your window icon and “Thinking…” placeholder.
@@ -295,8 +290,8 @@ Make sure your lock_icon.png and hourglass_icon.png live alongside ai_chat_gui_U
 With the virtualenv active, from project root run:
 
 ### bash
-*  python UserInterface/EmailKnowledgeGraph/gui/ai_chat_gui_Ubuntu.py
-Or wherever you’ve placed your GUI script.
+*  python UserInterface/EmailKnowledgeGraph/gui/ai_chat_gui_Ubuntu.py\
+*  ---Or wherever you’ve placed your GUI script.
 
 # 9. VS Code Debug Configuration (Optional)
 To step through your code:
