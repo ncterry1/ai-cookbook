@@ -161,9 +161,9 @@ Dave builds three higher-order orchestrations by combining the above primitives:
 Open a terminal and run:
 
 ### bash
-  sudo apt update && sudo apt upgrade -y
+* sudo apt update && sudo apt upgrade -y
   
-  sudo apt install -y \
+*  sudo apt install -y \
       python3 \
       python3-venv \
       python3-pip \
@@ -183,7 +183,7 @@ Open a terminal and run:
 A. Install VS Code
 Either via Snap:
 ### bash
-  sudo snap install code --classic
+  * sudo snap install code --classic
 Or via Microsoft’s APT repo:
 
 ### bash
@@ -211,9 +211,9 @@ Tip: In VS Code’s settings, point the Python: Interpreter to your project’s 
 
 #3. Clone & Prepare the Project
 ### bash
-  cd ~
-  git clone https://github.com/daveebbelaar/ai-cookbook.git
-  cd ai-cookbook
+  * cd ~
+  * git clone https://github.com/daveebbelaar/ai-cookbook.git
+  * cd ai-cookbook
 
 # 4. Create & Activate a Virtual Environment
 ### bash
@@ -225,27 +225,26 @@ After this, in VS Code select .venv/bin/python as your interpreter.
 
 # 5. Install Python Dependencies
 ### bash
-  pip install \
+ * pip install \
     openai \
     reportlab \
     python-dotenv
 openai: Cloud API client
 
 reportlab: PDF export
-
 python-dotenv: Load .env automatically
 
 If you later swap to a local LLaMA backend, you’ll also install one of:
 
 ### bash
-  pip install llama-cpp-python
+*  pip install llama-cpp-python
 # —or—
-  pip install transformers torch accelerate
+*  pip install transformers torch accelerate
   
 # 6. Configure Your OpenAI Key
 In the project root create a file named .env containing:
 ### bash
-  OPENAI_API_KEY="sk-…your key…"
+*  OPENAI_API_KEY="sk-…your key…"
 Ensure your GUI script loads it (you have the python-dotenv import commented—just uncomment those two lines).
 
 # 7. Prepare Icons
@@ -255,7 +254,7 @@ Make sure your lock_icon.png and hourglass_icon.png live alongside ai_chat_gui_U
 With the virtualenv active, from project root run:
 
 ### bash
-  python UserInterface/EmailKnowledgeGraph/gui/ai_chat_gui_Ubuntu.py
+*  python UserInterface/EmailKnowledgeGraph/gui/ai_chat_gui_Ubuntu.py
 Or wherever you’ve placed your GUI script.
 
 # 9. VS Code Debug Configuration (Optional)
@@ -282,26 +281,26 @@ Select “Python: GUI” in the Debug panel and hit ▶️.
 Recap of Terminal Commands
 ### bash
 # System prep
-  sudo apt update && sudo apt upgrade -y
-  sudo apt install -y python3 python3-venv python3-pip python3-tk git curl build-essential libssl-dev libffi-dev
+*  sudo apt update && sudo apt upgrade -y
+*  sudo apt install -y python3 python3-venv python3-pip python3-tk git curl build-essential libssl-dev libffi-dev
 
 ## VS Code (snap)
-  sudo snap install code --classic
+*  sudo snap install code --classic
 
 ## Or VS Code (APT) [see detailed steps above]
 
 ## Project setup
-  git clone https://github.com/daveebbelaar/ai-cookbook.git
-  cd ai-cookbook
-  python3 -m venv .venv
-  source .venv/bin/activate
-  pip install --upgrade pip
-  pip install openai reportlab python-dotenv
+*  git clone https://github.com/daveebbelaar/ai-cookbook.git
+*  cd ai-cookbook
+*  python3 -m venv .venv
+*  source .venv/bin/activate
+*  pip install --upgrade pip
+*  pip install openai reportlab python-dotenv
 
 ## (Optional for local LLaMA)
-   pip install llama-cpp-python
+*   pip install llama-cpp-python
 # or
-   pip install transformers torch accelerate
+*   pip install transformers torch accelerate
 That should give you a fully functional Ubuntu dev VM ready to run and develop your AI Chat GUI with OpenAI—and later pivot to a local LLaMA model if desired.
 
 ## ################################
