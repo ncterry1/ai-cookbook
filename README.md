@@ -209,23 +209,64 @@ Once VS Code is open, install these from the Extensions pane:
 
 Tip: In VS Code’s settings, point the Python: Interpreter to your project’s .venv/bin/python after you create it below.
 
-#3. Clone & Prepare the Project
+# 3. Clone Your Repo & Create Working Branch
 ### bash
-  * cd ~
-  * git clone https://github.com/daveebbelaar/ai-cookbook.git
-  * cd ai-cookbook
+* cd ~
+* git clone https://github.com/your_org/ai-cookbook.git
+* cd ai-cookbook
+
+# If the remote branch 'nctbranch' already exists:
+* git fetch origin
+* git checkout -b nctbranch origin/nctbranch
+
+If you get The “permission denied” on checkout means Git can’t write into your working tree (or .git/) because of file‐system permissions. Let’s fix that:
+
+Make sure you own the repo directory 
+From inside ~/Desktop/ai-cookbook, do: 
+### bash
+* sudo chown -R "$(whoami):$(whoami)" .
+
+This makes you the owner of every file and folder in the repo.
+
+Ensure you have read/write permissions 
+Still in ai-cookbook, run:
+
+### bash
+* chmod -R u+rwX .
+This gives your user read/write on files and enter (execute) on folders.
+
+Tell Git this directory is safe (if you haven’t already):
+
+### bash
+* git config --global --add safe.directory "$(pwd)"
+Fetch and check out the branch
+
+### bash
+* git fetch origin
+* git checkout --track origin/nctbranch
+  
+That should now succeed without permission errors.
+Pull the latest commits
+### bash
+* git pull 
+From here on out your nctbranch will track origin/nctbranch and you can switch, pull, and push normally.
+
+
+# Otherwise, create it locally and push:
+* git checkout -b nctbranch
+* git push -u origin nctbranch
 
 # 4. Create & Activate a Virtual Environment
 ### bash
-*  python3 -m venv .venv
+* sudo python3 -m venv .venv
 * source .venv/bin/activate
-* pip install --upgrade pip
+* sudo pip install --upgrade pip
   
 After this, in VS Code select .venv/bin/python as your interpreter.
 
 # 5. Install Python Dependencies
 ### bash
- * pip install \
+ * sudo pip3 install \
     openai \
     reportlab \
     python-dotenv
