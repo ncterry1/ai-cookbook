@@ -265,7 +265,8 @@ Tell Git this directory is safe (if you haven’t already):
  * sudo pip3 install \
     openai \
     reportlab \
-    python-dotenv
+    python-dotenv \
+    dotenv
 openai: Cloud API client
 
 reportlab: PDF export
