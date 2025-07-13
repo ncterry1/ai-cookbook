@@ -60,6 +60,33 @@ project-root/
 #=======================================================
 #=======================================================
 
+File Details
+********************************************
+docker-compose.yml (YAML): Orchestrates the three services. Must live at project root.
+
+neo4j/ folder: Place any custom Neo4j configuration or plugins; neo4j/Dockerfile overrides the base image.
+********************************************
+********************************************
+********************************************
+- ingest/ folder:
+--- Dockerfile: No extension; defines the container build for ingestion.
+
+--- requirements.txt: Plain text listing neo4j-driver and python-dotenv (one per line).
+
+--- email_ingest.py: Python script that reads files from emails/ (you must create this folder alongside ingest/), parses content, and loads nodes/relationships into Neo4j.
+********************************************
+********************************************
+********************************************
+- gui/ folder:
+
+--- Dockerfile: No extension; defines the GUI container build.
+
+--- requirements.txt: Plain text listing openai, reportlab, neo4j-driver, and any other Python libs your GUI needs.
+
+--- ai_chat_gui.py: The complete Tkinter application script.
+
+********************************************
+graph_builder.py: A standalone Python script (runs on host) that connects to Neo4j over Bolt and executes Cypher queries.
 
 #=======================================================
 #=======================================================
