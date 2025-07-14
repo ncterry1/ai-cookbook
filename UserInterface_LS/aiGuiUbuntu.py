@@ -68,10 +68,38 @@ for key, path in ICON_FILENAMES.items():
 default_icon = icons.get('llmicon') or icons.get('noActionicon')
 if default_icon:
     window.iconphoto(True, default_icon)
-
-# ==========
+# ========================================
+# ========================================
+# ========================================
+# AI MODES & LOADER
+# ========================================
+AVAILABLE_MODES = {
+    "Q&A": "ai_functions.llm_client",
+    # add additional modes as needed
+}
+# ========================================
+def call_ai_function(mode: str, prompt: str) -> str:
+    """
+    Dynamically load the module for the selected mode and invoke its ask() or run() function.
+    """
+    module_path = AVAILABLE_MODES.get(mode)
+    if not module_path:
+        return f"Invalid mode: {mode}"
+    try:
+        module = importlib.import_module(module_path)
+    except ImportError as e:
+        return f"Error importing module '{module_path}': {e}"
+    # Prefer run(), fallback to ask()
+    if hasattr(module, 'run'):
+        return module.run(prompt)
+    if hasattr(module, 'ask'):
+        return module.ask(prompt)
+    return f"Module '{module_path}' has no run() or ask() function"
+# ========================================
+# ========================================
+# ========================================
 # HEADER BAR
-# ==========
+# ========================================
 header_frame = tk.Frame(window, bg=HEADER_BG, pady=15)
 header_frame.pack(fill='x')
 hdr_kwargs = {
@@ -84,7 +112,30 @@ if 'llmicon' in icons:
     hdr_kwargs.update(image=icons['llmicon'], compound='left')
 header_label = tk.Label(header_frame, **hdr_kwargs)
 header_label.pack()
-
+# ========================================
+# ==========
+# MODE SELECTOR
+# ==========
+mode_var = tk.StringVar(value='Q&A')
+mode_frame = tk.Frame(window, bg=BG_COLOR)
+mode_frame.pack(pady=(10, 0))
+mode_label = tk.Label(
+    mode_frame,
+    text="AI Mode:",
+    font=FONT_LABEL,
+    bg=BG_COLOR,
+    fg=FG_COLOR
+)
+mode_label.pack(side='left', padx=(20,5))
+mode_menu = tk.OptionMenu(mode_frame, mode_var, *AVAILABLE_MODES.keys())
+mode_menu.config(
+    font=FONT_LABEL,
+    bg=BUTTON_BG,
+    fg=BUTTON_FG,
+    relief='flat',
+    bd=0
+)
+mode_menu.pack(side='left')
 # ==========
 # PROMPT ENTRY FIELD
 # ==========
@@ -96,7 +147,7 @@ prompt_label = tk.Label(
     fg=FG_COLOR
 )
 prompt_label.pack(anchor='w', padx=20)
-
+# ========================================
 question_entry = tk.Entry(
     window,
     font=FONT_ENTRY,
@@ -106,9 +157,10 @@ question_entry = tk.Entry(
     relief='flat',
     bd=0
 )
+# ========================================
 question_entry.pack(fill='x', padx=20, pady=(0, 10))
 question_entry.focus()
-
+# ========================================
 # ==========
 # SEND BUTTON CALLBACK
 # ==========
@@ -133,7 +185,7 @@ def on_send():
     output_area.delete('1.0', tk.END)
     output_area.insert(tk.END, ai_result)
     output_area.config(state='disabled')
-
+# ========================================
 # ==========
 # SEND BUTTON
 # ==========
@@ -146,11 +198,12 @@ send_kwargs = {
     'bd': 0,
     'command': on_send
 }
+# ========================================
 if 'clockicon' in icons:
     send_kwargs.update(image=icons['clockicon'], compound='left')
 send_button = tk.Button(window, **send_kwargs)
 send_button.pack(pady=(0, 10))
-
+# ========================================
 # ==========
 # OUTPUT AREA
 # ==========
@@ -164,15 +217,16 @@ output_area = scrolledtext.ScrolledText(
     relief='flat',
     bd=0
 )
+# ========================================
 output_area.config(state='disabled')
 output_area.pack(fill='both', expand=True, padx=20, pady=(0, 20))
-
+# ========================================
 # ==========
 # EXPORT BUTTONS
 # ==========
 exp_frame = tk.Frame(window, bg=BG_COLOR)
 exp_frame.pack(pady=(0, 20))
-
+# ========================================
 tk.Button(
     exp_frame,
     text="Export as TXT",
@@ -183,7 +237,7 @@ tk.Button(
     bd=0,
     command=lambda: export_txt_widget(output_area)
 ).pack(side='left', padx=10)
-
+# ========================================
 tk.Button(
     exp_frame,
     text="Export as PDF",
@@ -194,8 +248,11 @@ tk.Button(
     bd=0,
     command=lambda: export_pdf_widget(output_area)
 ).pack(side='left', padx=10)
-
+# ========================================
 # ==========
 # MAIN LOOP
 # ==========
 window.mainloop()
+# ========================================
+# ========================================
+# ========================================
