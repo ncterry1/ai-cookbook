@@ -1,59 +1,201 @@
-### HS_aiGuiUbuntu.py
-```python
+### aiGuiUbuntu.py
+
+"""
+Main GUI for CyberSafe AI Safety Hub
+Leverages OpenAI API for Q&A.
+"""
+
+# ==========
+# IMPORTS
+# ==========
+import importlib
+import config
+from pathlib import Path
 import tkinter as tk
-from tkinter.scrolledtext import ScrolledText
-from HS_llm_client import ask
-from HS_io_helpers import export_txt_widget, export_pdf_widget
+from tkinter import scrolledtext
+import platform
+from ai_functions.llm_client import ask
+from utils.io_helpers import export_txt_widget, export_pdf_widget
 
-class ChatGUI(tk.Tk):
-    def __init__(self):
-        super().__init__()
-        self.title("OpenAI Chat GUI")
-        self.geometry("800x600")
+# Force reload config for interactive scenarios
+importlib.reload(config)
 
-        # Chat display
-        self.chat_display = ScrolledText(self, state='disabled', wrap='word')
-        self.chat_display.pack(fill='both', expand=True, padx=10, pady=10)
+from config import (
+    # Theme & UI
+    BG_COLOR, FG_COLOR, HEADER_BG,
+    BUTTON_BG, BUTTON_FG,
+    ENTRY_BG, ENTRY_FG,
+    TEXT_BG, TEXT_FG,
+    FONT_HEADER, FONT_LABEL, FONT_ENTRY, FONT_TEXT,
+    ICON_FILENAMES, WINDOW_TITLE,
+    # LLM config
+    OPENAI_API_KEY, OPENAI_API_BASE, OPENAI_DEFAULT_MODEL,
+    # Paths
+    BASE_DIR, IMAGES_DIR,
+    # PDF export settings
+    PDF_PAGE_HEIGHT, PDF_PAGE_WIDTH, PDF_MARGIN_INCH,
+    PDF_FONT, PDF_FONT_SIZE, PDF_LINE_SPACING,
+)
 
-        # User input
-        input_frame = tk.Frame(self)
-        input_frame.pack(fill='x', padx=10, pady=(0,10))
-        self.user_input = tk.Entry(input_frame)
-        self.user_input.pack(side='left', fill='x', expand=True)
-        self.user_input.bind('<Return>', self.send_message)
+# ==========
+# WINDOW SETUP
+# ==========
+window = tk.Tk()
+window.title(WINDOW_TITLE)
+window.configure(bg=BG_COLOR)
 
-        send_btn = tk.Button(input_frame, text="Send", command=self.send_message)
-        send_btn.pack(side='right')
+# Maximize window
+if platform.system() == "Windows":
+    window.state("zoomed")
+else:
+    try:
+        window.attributes("-zoomed", True)
+    except tk.TclError:
+        window.update_idletasks()
+        w = window.winfo_screenwidth()
+        h = window.winfo_screenheight()
+        window.geometry(f"{w}x{h}")
 
-        # Export buttons
-        export_frame = tk.Frame(self)
-        export_frame.pack(fill='x', padx=10)
-        tk.Button(export_frame, text="Export TXT", command=lambda: export_txt_widget(self.chat_content())).pack(side='left')
-        tk.Button(export_frame, text="Export PDF", command=lambda: export_pdf_widget(self.chat_content())).pack(side='left')
+# ==========
+# LOAD ICONS
+# ==========
+icons = {}
+for key, path in ICON_FILENAMES.items():
+    if path.exists():
+        icons[key] = tk.PhotoImage(file=str(path))
 
-    def chat_content(self) -> str:
-        return self.chat_display.get('1.0', 'end').strip()
+# Set window icon if available
+default_icon = icons.get('llmicon') or icons.get('noActionicon')
+if default_icon:
+    window.iconphoto(True, default_icon)
 
-    def append_message(self, role: str, msg: str):
-        self.chat_display.configure(state='normal')
-        self.chat_display.insert('end', f"{role}: {msg}\n")
-        self.chat_display.configure(state='disabled')
-        self.chat_display.see('end')
+# ==========
+# HEADER BAR
+# ==========
+header_frame = tk.Frame(window, bg=HEADER_BG, pady=15)
+header_frame.pack(fill='x')
+hdr_kwargs = {
+    'text': WINDOW_TITLE,
+    'font': FONT_HEADER,
+    'bg': HEADER_BG,
+    'fg': FG_COLOR
+}
+if 'llmicon' in icons:
+    hdr_kwargs.update(image=icons['llmicon'], compound='left')
+header_label = tk.Label(header_frame, **hdr_kwargs)
+header_label.pack()
 
-    def send_message(self, event=None):
-        user_text = self.user_input.get().strip()
-        if not user_text:
-            return
-        self.append_message("User", user_text)
-        self.user_input.delete(0, 'end')
+# ==========
+# PROMPT ENTRY FIELD
+# ==========
+prompt_label = tk.Label(
+    window,
+    text="Enter AI Prompt:",
+    font=FONT_LABEL,
+    bg=BG_COLOR,
+    fg=FG_COLOR
+)
+prompt_label.pack(anchor='w', padx=20)
 
-        try:
-            response = ask(user_text)
-        except Exception as e:
-            response = f"Error: {e}"
+question_entry = tk.Entry(
+    window,
+    font=FONT_ENTRY,
+    bg=ENTRY_BG,
+    fg=ENTRY_FG,
+    insertbackground=ENTRY_FG,
+    relief='flat',
+    bd=0
+)
+question_entry.pack(fill='x', padx=20, pady=(0, 10))
+question_entry.focus()
 
-        self.append_message("Assistant", response)
+# ==========
+# SEND BUTTON CALLBACK
+# ==========
+def on_send():
+    user_prompt = question_entry.get().strip()
+    if not user_prompt:
+        return
 
-if __name__ == '__main__':
-    app = ChatGUI()
-    app.mainloop()
+    output_area.config(state='normal')
+    output_area.delete('1.0', tk.END)
+    placeholder = f"🔍 AI Prompt:\n{user_prompt}\n\n⏳ Thinking..."
+    output_area.insert(tk.END, placeholder)
+    output_area.config(state='disabled')
+    window.update_idletasks()
+
+    try:
+        ai_result = ask(user_prompt)
+    except Exception as e:
+        ai_result = f"❌ Error: {e}"
+
+    output_area.config(state='normal')
+    output_area.delete('1.0', tk.END)
+    output_area.insert(tk.END, ai_result)
+    output_area.config(state='disabled')
+
+# ==========
+# SEND BUTTON
+# ==========
+send_kwargs = {
+    'text': "Send AI Request ▶",
+    'font': FONT_LABEL,
+    'bg': BUTTON_BG,
+    'fg': BUTTON_FG,
+    'relief': 'flat',
+    'bd': 0,
+    'command': on_send
+}
+if 'clockicon' in icons:
+    send_kwargs.update(image=icons['clockicon'], compound='left')
+send_button = tk.Button(window, **send_kwargs)
+send_button.pack(pady=(0, 10))
+
+# ==========
+# OUTPUT AREA
+# ==========
+output_area = scrolledtext.ScrolledText(
+    window,
+    wrap=tk.WORD,
+    font=FONT_TEXT,
+    bg=TEXT_BG,
+    fg=TEXT_FG,
+    insertbackground=TEXT_FG,
+    relief='flat',
+    bd=0
+)
+output_area.config(state='disabled')
+output_area.pack(fill='both', expand=True, padx=20, pady=(0, 20))
+
+# ==========
+# EXPORT BUTTONS
+# ==========
+exp_frame = tk.Frame(window, bg=BG_COLOR)
+exp_frame.pack(pady=(0, 20))
+
+tk.Button(
+    exp_frame,
+    text="Export as TXT",
+    font=FONT_LABEL,
+    bg=BUTTON_BG,
+    fg=BUTTON_FG,
+    relief='flat',
+    bd=0,
+    command=lambda: export_txt_widget(output_area)
+).pack(side='left', padx=10)
+
+tk.Button(
+    exp_frame,
+    text="Export as PDF",
+    font=FONT_LABEL,
+    bg=BUTTON_BG,
+    fg=BUTTON_FG,
+    relief='flat',
+    bd=0,
+    command=lambda: export_pdf_widget(output_area)
+).pack(side='left', padx=10)
+
+# ==========
+# MAIN LOOP
+# ==========
+window.mainloop()
