@@ -41,7 +41,8 @@ from config import (
 
 from ai_manager import call_ai_function, AVAILABLE_MODES
 from utils.io_helpers import export_txt_widget, export_pdf_widget
-
+# If your system has more than one model to send request to
+from config import LLM_MODELS
 # ==========
 # WINDOW SETUP
 # ==========
@@ -81,7 +82,6 @@ AVAILABLE_MODES = {
     "Q&A": "ai_functions.qa",
     "Data Analysis": "ai_functions.data_analysis",
 }
-
 # ===========
 # CALL AI FUNCTION
 # ===========
@@ -127,11 +127,29 @@ mode_var = tk.StringVar(value="Q&A")
 mode_menu = tk.OptionMenu(window, mode_var, *AVAILABLE_MODES.keys())
 mode_menu.config(font=FONT_LABEL, bg=BUTTON_BG, fg=BUTTON_FG, relief="flat", bd=0)
 mode_menu.pack(pady=(0, 10))
-
+# ==========
+# LLM MODEL SELECTOR
+# ==========
+tk.Label(window,
+         text="LLM Model:",
+         font=FONT_LABEL,
+         bg=BG_COLOR,
+         fg=FG_COLOR
+).pack(pady=(5, 0))
+# -------------------------------
+llm_model_var = tk.StringVar(value=LLM_DEFAULT_MODEL)
+llm_menu = tk.OptionMenu(window, llm_model_var, *LLM_MODELS)
+llm_menu.config(font=FONT_LABEL, bg=BUTTON_BG, fg=BUTTON_FG, relief="flat", bd=0)
+llm_menu.pack(pady=(0, 10))
 # ===========
 # PROMPT ENTRY FIELD
 # ===========
-prompt_label = tk.Label(window, text="Enter AI Prompt:", font=FONT_LABEL, bg=BG_COLOR, fg=FG_COLOR)
+prompt_label = tk.Label(
+    window, 
+    text="Enter AI Prompt:", 
+    font=FONT_LABEL, 
+    bg=BG_COLOR, 
+    fg=FG_COLOR)
 prompt_label.pack(anchor='w', padx=20)
 #--------------
 question_entry = tk.Entry(
@@ -154,26 +172,53 @@ def on_send() -> None:
     user_prompt = question_entry.get().strip()
     if not user_prompt:
         return
-
     # Display placeholder
     output_area.config(state='normal')
     output_area.delete('1.0', tk.END)
+    # -------------------------------------
+    # Insert mainIcon if available
+    if "mainIcon" in icons:
+        output_area.image_create(tk.END, image=icons["mainIcon"])
+        output_area.insert(tk.END, " ")
     placeholder_text = f"🔍 {mode_var.get()} AI Prompt:\n{user_prompt}\n\n⏳ Thinking..."
     output_area.insert(tk.END, placeholder_text)
-    output_area.config(state='disabled')
+    # -------------------------------------
+    # Insert thinking icon or emoji
+    if "clockicon" in icons:
+        output_area.image_create(tk.END, image=icons["clockicon"])
+        output_area.insert(tk.END, " Thinking…")
+    else:
+        output_area.insert(tk.END, "⏳ Thinking…")
+    output_area.config(state="disabled")
     window.update_idletasks()
-
-    # Call AI
+    # -------------------------------------
+    # 3) Reconfigure the LLM client with the chosen model
+    # Just make sure that call happens before you ever invoke llm_client.ask()
+    import ai_functions.llm_client as llm_client
+    llm_client.confgure (
+        api_key=LLM_API_KEY,
+        base_url=LLM_BASE_URL,
+        default_model=llm_model_var.get()
+    )
+    # -------------------------------------
+    # 4) Call the AI function and handle errors
+    is_error = False
     try:
         ai_result = call_ai_function(mode_var.get(), user_prompt)
-    except Exception as err:
-        ai_result = f"❌ Error: {err}"
+    except Exception:
+        is_error = True
+        ai_result = ""  # errorIcon will indicate failure
 
-    # Display AI response
-    output_area.config(state='normal')
-    output_area.delete('1.0', tk.END)
-    output_area.insert(tk.END, ai_result)
-    output_area.config(state='disabled')
+    # Display the AI result or error icon
+    output_area.config(state="normal")
+    output_area.delete("1.0", tk.END)
+    if is_error and "errorIcon" in icons:
+        output_area.image_create(tk.END, image=icons["errorIcon"])
+        output_area.insert(tk.END, " ")
+        output_area.insert(tk.END, ai_result)
+    else:
+        output_area.insert(tk.END, ai_result)
+    output_area.config(state="disabled")
 
 # ===========
 # SEND BUTTON

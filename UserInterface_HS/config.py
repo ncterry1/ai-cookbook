@@ -4,21 +4,31 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from reportlab.lib.pagesizes import letter   # provides a (width, height) tuple
-
+# ============================================
 # ===========
 # 1) ENV & LLM CONFIG
-# ===========
+# ============================================
 load_dotenv(Path(__file__).parent / ".env")
 
 LLM_API_KEY       = os.getenv("LLM_API_KEY")
 LLM_BASE_URL      = os.getenv("LLM_BASE_URL")
 LLM_DEFAULT_MODEL = os.getenv("LLM_DEFAULT_MODEL")
-
+# ============================================
 if not (LLM_API_KEY and LLM_BASE_URL and LLM_DEFAULT_MODEL):
     raise ValueError(
         "Please set LLM_API_KEY, LLM_BASE_URL, and LLM_DEFAULT_MODEL in your .env"
     )
-
+# ============================================
+# ============================================
+# For if a user has more than one model to send AI request to
+# This is a sample and not complete for HS
+LLM_MODELS = [
+    "Llama-4-Scout-17B-16E-Instruct:latest",
+    "llama (not complte)",
+    "Mistral (not complete)",
+    "gemma-2 (not complete)"
+]
+# ============================================
 # ===========
 # 2) THEME COLORS & FONTS
 # ===========
