@@ -27,7 +27,59 @@ from config import (
     PDF_FONT_SIZE,
     PDF_LINE_SPACING, OPENAI_API_BASE, OPENAI_API_KEY, OPENAI_DEFAULT_MODEL, BG_COLOR, FG_COLOR, HEADER_BG, BUTTON_BG, BUTTON_FG, ENTRY_BG, ENTRY_FG, TEXT_BG, TEXT_FG, FONT_ENTRY, FONT_TEXT, FONT_HEADER, FONT_LABEL, BASE_DIR, IMAGES_DIR, ICON_FILENAMES, WINDOW_TITLE, DEFAULT_VENV
 )
+# for on_send
+import tkinter as tk
+import importlib
+from config import AVAILABLE_MODES            # or wherever you kept that dict
+from ai_functions.llm_client import ask       # or your call_ai_function, depending on design
 
+'''=============================
+================================
+================================
+================================
+================================'''
+def on_send(output_widget: tk.Text,
+            mode_var: tk.StringVar,
+            prompt_entry: tk.Entry,
+            llm_model_var: tk.StringVar) -> None:
+    """
+    1) Read the prompt from prompt_entry
+    2) Show a ‘Thinking…’ placeholder in output_widget
+    3) Dispatch to the right LLM function
+    4) Write the answer back into output_widget
+    """
+    prompt = prompt_entry.get().strip()
+    if not prompt:
+        return
+
+    # 1) placeholder
+    output_widget.config(state='normal')
+    output_widget.delete('1.0', tk.END)
+    output_widget.insert(
+        tk.END,
+        f"🔍 {mode_var.get()} Prompt:\n{prompt}\n\n⏳ Thinking..."
+    )
+    output_widget.config(state='disabled')
+    output_widget.master.update_idletasks()
+
+    # 2) call LLM
+    #    (if you use call_ai_function, import that instead of ask())
+    try:
+        answer = ask(prompt, model=llm_model_var.get())
+    except Exception as e:
+        answer = f"❌ Error: {e}"
+
+    # 3) write back
+    output_widget.config(state='normal')
+    output_widget.delete('1.0', tk.END)
+    output_widget.insert(tk.END, answer)
+    output_widget.config(state='disabled')
+
+'''=============================
+================================
+================================
+================================
+================================'''
 
 def export_txt_widget(widget):
     """Save the contents of a Tkinter Text widget to a .txt file."""
@@ -39,7 +91,11 @@ def export_txt_widget(widget):
     if path:
         Path(path).write_text(text, encoding="utf-8")
 
-
+'''=============================
+================================
+================================
+================================
+================================'''
 def export_pdf_widget(widget):
     """Save the contents of a Tkinter Text widget to a wrapped, paginated PDF."""
     text = widget.get("1.0", "end")
@@ -79,3 +135,8 @@ def export_pdf_widget(widget):
 
     pdf.drawText(text_obj)
     pdf.save()
+'''=============================
+================================
+================================
+================================
+================================'''

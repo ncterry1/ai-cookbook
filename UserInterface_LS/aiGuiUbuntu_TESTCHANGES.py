@@ -38,6 +38,7 @@ from config import (
     # Import the array of gpt-llm-models to choose from
     LLM_MODELS
 )
+
 # ==========
 # WINDOW SETUP
 # ==========
@@ -75,11 +76,7 @@ if default_icon:
 # AI MODES & LOADER
 # ========================================
 # Options to let user choose the focus of the llm
-AVAILABLE_MODES = {
-    "Q&A": "ai_functions.llm_client",
-    # add additional modes as needed
-}
-# ========================================
+from config import AVAILABLE_MODES
 def call_ai_function(mode: str, prompt: str) -> str:
     # Dynamically load the module for the selected mode and invoke its ask() or run() function.
     module_path = AVAILABLE_MODES.get(mode)
@@ -113,23 +110,38 @@ if 'llmicon' in icons:
 header_label = tk.Label(header_frame, **hdr_kwargs)
 header_label.pack()
 # ========================================
+# ========================================
 # ==========
 # MODE SELECTOR
 # # The top dropdown that lets a user select which focus they want the llm to have
 mode_var = tk.StringVar(value='Q&A')
 mode_frame = tk.Frame(window, bg=BG_COLOR)
 mode_frame.pack(pady=(10, 0))
-mode_label = tk.Label(mode_frame, text="AI Mode:", font=FONT_LABEL, bg=BG_COLOR, fg=FG_COLOR).pack(side='left', padx=(30,5))
+mode_label = tk.Label(
+    mode_frame,
+    text="AI Mode:",
+    font=FONT_LABEL,
+    bg=BG_COLOR,
+    fg=FG_COLOR
+).pack(side='left', padx=(30,5))
 mode_menu = tk.OptionMenu(mode_frame, mode_var, *AVAILABLE_MODES.keys())
 mode_menu.config(font=FONT_LABEL, bg=BUTTON_BG, fg=BUTTON_FG, relief='flat', bd=0)
 mode_menu.pack(side='left')
+# ========================================
 # ========================================
 # LLM Selector (gpt-3.5-turbo, gpt-4)
 # Label / dropdown to choose which llm to use
 llm_model_var = tk.StringVar(value=OPENAI_DEFAULT_MODEL)
 llm_model_frame = tk.Frame(window, bg=BG_COLOR)
 llm_model_frame.pack(pady=(10, 0))
-llm_model_label = tk.Label(llm_model_frame, text="LLM Model:", font=FONT_LABEL,  bg=BG_COLOR, fg=FG_COLOR,).pack(side='left', padx=(20,5))
+llm_model_label = tk.Label(
+    llm_model_frame,
+    text="LLM Model:",
+    font=FONT_LABEL,
+    bg=BG_COLOR,
+    fg=FG_COLOR,
+    ).pack(side='left', padx=(20,5))
+
 llm_menu = tk.OptionMenu(llm_model_frame, llm_model_var, *LLM_MODELS)
 llm_menu.config(font=FONT_LABEL, bg=BUTTON_BG, fg=BUTTON_FG, relief="flat", bd=0)
 llm_menu.pack(side='left')
@@ -146,6 +158,7 @@ prompt_label = tk.Label(
 )
 prompt_label.pack(anchor='w', padx=20)
 # ========================================
+# input line for user to ask question
 question_entry = tk.Entry(
     window,
     font=FONT_ENTRY,
@@ -159,25 +172,23 @@ question_entry = tk.Entry(
 question_entry.pack(fill='x', padx=20, pady=(0, 10))
 question_entry.focus()
 # ========================================
-# ========================================
-from utils.io_helpers import on_send
+# ==========
 # SEND BUTTON
-# on_send function in io_helpers
-send_button = tk.Button(
-    window,
-    text="Send AI Request ▶",
-    font=FONT_LABEL,
-    bg=BUTTON_BG,
-    fg=BUTTON_FG,
-    relief='flat',
-    bd=0,
-    command=lambda: on_send(
-        output_widget=output_area,
-        mode_var=mode_var,
-        prompt_entry=question_entry,
-        llm_model_var=llm_model_var
-    )
-)
+# ==========
+from utils.io_helpers import on_send
+send_kwargs = {
+    'text': "Send AI Request ▶",
+    'font': FONT_LABEL,
+    'bg': BUTTON_BG,
+    'fg': BUTTON_FG,
+    'relief': 'flat',
+    'bd': 0,
+    'command': on_send
+}
+# ========================================
+if 'clockicon' in icons:
+    send_kwargs.update(image=icons['clockicon'], compound='left')
+send_button = tk.Button(window, **send_kwargs)
 send_button.pack(pady=(0, 10))
 # ========================================
 # ==========
@@ -193,7 +204,7 @@ output_area = scrolledtext.ScrolledText(
     relief='flat',
     bd=0
 )
-# ------------------
+# ========================================
 output_area.config(state='disabled')
 output_area.pack(fill='both', expand=True, padx=20, pady=(0, 20))
 # ========================================

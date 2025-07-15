@@ -18,7 +18,21 @@ if not (OPENAI_API_KEY and OPENAI_API_BASE and OPENAI_DEFAULT_MODEL):
     raise ValueError(
         "Please set OPENAI_API_KEY, OPENAI_API_BASE, and OPENAI_DEFAULT_MODEL in your .env"
     )
-
+# ============================================
+# We have calling functions to the llms to tell them to focus 
+# QA on llm_client is a general assistant fof general questions. 
+AVAILABLE_MODES = {
+    "Q&A":           "ai_functions.llm_client",
+    "Data Analysis": "ai_functions.data_analysis",
+    # add more modes here as you build them
+}
+# ============================================
+# For if a user has more than one model to send AI request to
+# This is a sample and not complete for HS
+LLM_MODELS = [
+    "gpt-3.5-turbo",
+    "gpt-4"
+]
 # ===========
 # 2) THEME COLORS & FONTS
 # ===========
