@@ -9,7 +9,7 @@ Leverages OpenAI API for Q&A.
 # IMPORTS
 # ==========
 import importlib
-import config
+import config as config
 from pathlib import Path
 import tkinter as tk
 from tkinter import scrolledtext
@@ -228,7 +228,12 @@ tk.Button(
 # ==========
 # MAIN LOOP
 # ==========
-window.mainloop()
+#window.mainloop()
+def run_app():
+    window.mainloop()
+
+if __name__ == "__main__":
+    run_app()
 # ========================================
 # ========================================
 # ========================================

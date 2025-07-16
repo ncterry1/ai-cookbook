@@ -9,7 +9,7 @@ Leverages OpenAI API for Q&A.
 # IMPORTS
 # ==========
 import importlib
-import config
+import UserInterface_LS.config.config as config
 from pathlib import Path
 import tkinter as tk
 from tkinter import scrolledtext
@@ -20,7 +20,7 @@ from utils.io_helpers import export_txt_widget, export_pdf_widget
 # Force reload config for interactive scenarios
 importlib.reload(config)
 
-from config import (
+from UserInterface_LS.config.config import (
     # Theme & UI
     BG_COLOR, FG_COLOR, HEADER_BG,
     BUTTON_BG, BUTTON_FG,
@@ -76,7 +76,7 @@ if default_icon:
 # AI MODES & LOADER
 # ========================================
 # Options to let user choose the focus of the llm
-from config import AVAILABLE_MODES
+from UserInterface_LS.config.config import AVAILABLE_MODES
 def call_ai_function(mode: str, prompt: str) -> str:
     # Dynamically load the module for the selected mode and invoke its ask() or run() function.
     module_path = AVAILABLE_MODES.get(mode)
