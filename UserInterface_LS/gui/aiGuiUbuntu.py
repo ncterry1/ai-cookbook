@@ -1,175 +1,257 @@
 ### aiGuiUbuntu.py
-
 """
-Main GUI for CyberSafe AI Safety Hub
-Leverages OpenAI API for Q&A.
+Main GUI for CyberSafe AI Safety Hub
+────────────────────────────────────
+A cross‑platform desktop interface (Windows and Linux) that leverages a Local / OpenAI‑compatible
+LLM back‑end for:
+  • Question‑and‑Answer style chat (default)
+  • Additional AI modes (e.g. data analysis) that can be added dynamically
+
+The GUI is implemented with Python’s built‑in ``tkinter`` toolkit to avoid external UI
+dependencies.  Features include:
+  ▶ Runtime selection of AI *mode* (Q&A vs others)
+  ▶ Runtime selection of LLM *model* (e.g. gpt‑3.5‑turbo vs gpt‑4o‑mini)
+  ▶ Scrollable, read‑only output area
+  ▶ Export results to **.txt** or **.pdf** via helper functions
+  ▶ Optional iconography for a visually distinct, cybersecurity‑themed look
+
+This file contains **ONLY GUI logic**; it delegates:
+  — LLM calls to ``ai_functions.llm_client``
+  — Export helpers to ``utils.io_helpers``
+  — Theming & constants to ``config.py``
+
+IMPORTANT: **Do not edit functional code** unless you purposefully change behaviour.
+The added comments are meant purely for clarity & maintainability.
 """
 
-# ==========
-# IMPORTS
-# ==========
-import importlib
-import config as config
-from pathlib import Path
-import tkinter as tk
-from tkinter import scrolledtext
-import platform
-from ai_functions.llm_client import ask
-from utils.io_helpers import export_txt_widget, export_pdf_widget
+# ════════════════════════════════════════════════════════════════════════════════
+# 1) STANDARD & PROJECT IMPORTS
+# ════════════════════════════════════════════════════════════════════════════════
+import importlib                           # Dynamically (re)load Python modules
+# Need these 3 below to move back one directory to import associated modules
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import config as config                    # Centralised constants & theme values
+from pathlib import Path                   # OO‑style filesystem paths
+import tkinter as tk                       # Core Tkinter GUI package
+from tkinter import scrolledtext           # Convenience widget: Text + Scrollbar
+import platform                            # Detect OS for maximise logic
 
-# Force reload config for interactive scenarios
+# Project‑specific helpers / wrappers
+from ai_functions.llm_client import ask    # Thin wrapper around OpenAI‑compatible API
+from utils.io_helpers import (
+    export_txt_widget,                     # Save Text widget contents → .txt
+    export_pdf_widget                      # Save Text widget contents → paginated PDF
+)
+
+# Force a fresh read of ``config`` in interactive / hot‑reload scenarios.
+# (Has no effect in normal one‑shot execution.)
 importlib.reload(config)
 
+# Pull individual names from ``config`` to avoid repetitive ``config.`` prefixes.
 from config import (
-    # Theme & UI
+    # ─── Theming ────────────────────────────────────────────────────────────────
     BG_COLOR, FG_COLOR, HEADER_BG,
     BUTTON_BG, BUTTON_FG,
     ENTRY_BG, ENTRY_FG,
     TEXT_BG, TEXT_FG,
     FONT_HEADER, FONT_LABEL, FONT_ENTRY, FONT_TEXT,
-    ICON_FILENAMES, WINDOW_TITLE,
-    # LLM config
+
+    # ─── Icons & window title ──────────────────────────────────────────────────
+    ICON_FILENAMES,
+    WINDOW_TITLE,
+
+    # ─── LLM settings ──────────────────────────────────────────────────────────
     OPENAI_API_KEY, OPENAI_API_BASE, OPENAI_DEFAULT_MODEL,
-    # Paths
+    LLM_MODELS,                               # Iterable of model‑names for dropdown
+
+    # ─── Misc (paths, PDF settings) — kept for completeness ────────────────────
     BASE_DIR, IMAGES_DIR,
-    # PDF export settings
     PDF_PAGE_HEIGHT, PDF_PAGE_WIDTH, PDF_MARGIN_INCH,
     PDF_FONT, PDF_FONT_SIZE, PDF_LINE_SPACING,
-    # Import the array of gpt-llm-models to choose from
-    LLM_MODELS
 )
-# ==========
-# WINDOW SETUP
-# ==========
-window = tk.Tk()
-window.title(WINDOW_TITLE)
-window.configure(bg=BG_COLOR)
 
-# Maximize window
+# ════════════════════════════════════════════════════════════════════════════════
+# 2) TKINTER WINDOW SET‑UP
+# ════════════════════════════════════════════════════════════════════════════════
+window = tk.Tk()                            # Root ‑ must be created *once*
+window.title(WINDOW_TITLE)                  # Title shown in window‑manager chrome
+window.configure(bg=BG_COLOR)              # Apply background to root frame
+
+# ── Cross‑platform *maximise* logic ─────────────────────────────────────────────
+#   • Windows:  ``state('zoomed')`` gives a normal maximised window.
+#   • Many X11 window managers honour ``attributes('-zoomed', True)``.
+#   • Fallback: manually resize to full screen geometry.
 if platform.system() == "Windows":
     window.state("zoomed")
 else:
     try:
         window.attributes("-zoomed", True)
     except tk.TclError:
-        window.update_idletasks()
+        # Manual fallback on desktops/WMs that lack the attribute.
+        window.update_idletasks()           # Ensure screen dims are up‑to‑date
         w = window.winfo_screenwidth()
         h = window.winfo_screenheight()
         window.geometry(f"{w}x{h}")
 
-# ==========
-# LOAD ICONS
-# ==========
-icons = {}
+# ════════════════════════════════════════════════════════════════════════════════
+# 3) ICON LOADING (optional)
+# ════════════════════════════════════════════════════════════════════════════════
+# Build a dict → {icon_name: PhotoImage}. Missing files are silently skipped.
+icons: dict[str, tk.PhotoImage] = {}
 for key, path in ICON_FILENAMES.items():
-    if path.exists():
+    if path.exists():                      # Avoid Tk error when file absent
         icons[key] = tk.PhotoImage(file=str(path))
 
-# Set window icon if available
-default_icon = icons.get('llmicon') or icons.get('noActionicon')
+# Use a default icon for the window title bar (if any icon was found).
+# Priority: prefer "llmicon" → else "noActionicon" → else leave default.
+default_icon = icons.get("llmicon") or icons.get("noActionicon")
 if default_icon:
     window.iconphoto(True, default_icon)
-# ========================================
-# ========================================
-# ========================================
-# AI MODES & LOADER
-# ========================================
-# Options to let user choose the focus of the llm
-AVAILABLE_MODES = {
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 4) AI MODE & DISPATCHER
+# ════════════════════════════════════════════════════════════════════════════════
+# Mapping of *human‑readable name* → *import path* for the module implementing
+# that behaviour.  Additional modes can be appended without touching GUI code.
+AVAILABLE_MODES: dict[str, str] = {
     "Q&A": "ai_functions.llm_client",
-    # add additional modes as needed
+    # "Data Analysis": "ai_functions.data_analysis",   # example extension
 }
-# ========================================
+
 def call_ai_function(mode: str, prompt: str) -> str:
-    # Dynamically load the module for the selected mode and invoke its ask() or run() function.
+    """Dynamic dispatcher.
+
+    1. Look‑up *mode* → module path.
+    2. Import the module on demand (keeps start‑up lightweight).
+    3. Prefer ``run(prompt)`` entry‑point; fallback to ``ask(prompt)``.
+    4. Return the model’s string result **or** an intelligible error message.
+    """
     module_path = AVAILABLE_MODES.get(mode)
     if not module_path:
-        return f"Invalid mode: {mode}"
+        return f"Invalid mode: {mode}"                      # Guard: mode missing
     try:
-        module = importlib.import_module(module_path)
+        module = importlib.import_module(module_path)       # Lazy import
     except ImportError as e:
         return f"Error importing module '{module_path}': {e}"
-    # Prefer run(), fallback to ask()
+
+    # Choose the canonical function to call
     if hasattr(module, 'run'):
         return module.run(prompt)
     if hasattr(module, 'ask'):
         return module.ask(prompt)
     return f"Module '{module_path}' has no run() or ask() function"
-# ========================================
-# ========================================
-# ========================================
-# HEADER BAR
-# ========================================
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 5) HEADER BAR (title + optional icon)
+# ════════════════════════════════════════════════════════════════════════════════
 header_frame = tk.Frame(window, bg=HEADER_BG, pady=15)
-header_frame.pack(fill='x')
+header_frame.pack(fill='x')                 # Stretch horizontally
+
 hdr_kwargs = {
     'text': WINDOW_TITLE,
     'font': FONT_HEADER,
     'bg': HEADER_BG,
-    'fg': FG_COLOR
+    'fg': FG_COLOR,
 }
-if 'llmicon' in icons:
+if 'llmicon' in icons:                      # Prepend icon if available
     hdr_kwargs.update(image=icons['llmicon'], compound='left')
+
 header_label = tk.Label(header_frame, **hdr_kwargs)
 header_label.pack()
-# ========================================
-# ==========
-# MODE SELECTOR
-# # The top dropdown that lets a user select which focus they want the llm to have
-mode_var = tk.StringVar(value='Q&A')
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 6) AI MODE DROPDOWN (user chooses the *task category*)
+# ════════════════════════════════════════════════════════════════════════════════
+mode_var = tk.StringVar(value='Q&A')        # Tkinter‑managed string variable
 mode_frame = tk.Frame(window, bg=BG_COLOR)
 mode_frame.pack(pady=(10, 0))
-mode_label = tk.Label(mode_frame, text="AI Mode:", font=FONT_LABEL, bg=BG_COLOR, fg=FG_COLOR).pack(side='left', padx=(30,5))
-mode_menu = tk.OptionMenu(mode_frame, mode_var, *AVAILABLE_MODES.keys())
-mode_menu.config(font=FONT_LABEL, bg=BUTTON_BG, fg=BUTTON_FG, relief='flat', bd=0)
+
+# Label sits left of the OptionMenu
+_ = tk.Label(
+    mode_frame, text="AI Mode:", 
+    font=FONT_LABEL,
+    bg=BG_COLOR, 
+    fg=FG_COLOR
+).pack(side='left', padx=(30, 5))
+
+mode_menu = tk.OptionMenu(mode_frame, 
+                          mode_var, 
+                          *AVAILABLE_MODES.keys())
+
+mode_menu.config(font=FONT_LABEL, 
+                 bg=BUTTON_BG, 
+                 fg=BUTTON_FG,
+                 relief='flat', 
+                 bd=0)       # Flat = modern look
 mode_menu.pack(side='left')
-# ========================================
-# LLM Selector (gpt-3.5-turbo, gpt-4)
-# Label / dropdown to choose which llm to use
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 7) LLM *MODEL* DROPDOWN (e.g. choose gpt‑3.5‑turbo vs gpt‑4o)
+# ════════════════════════════════════════════════════════════════════════════════
 llm_model_var = tk.StringVar(value=OPENAI_DEFAULT_MODEL)
 llm_model_frame = tk.Frame(window, bg=BG_COLOR)
 llm_model_frame.pack(pady=(10, 0))
-llm_model_label = tk.Label(llm_model_frame, text="LLM Model:", font=FONT_LABEL,  bg=BG_COLOR, fg=FG_COLOR,).pack(side='left', padx=(20,5))
-llm_menu = tk.OptionMenu(llm_model_frame, llm_model_var, *LLM_MODELS)
-llm_menu.config(font=FONT_LABEL, bg=BUTTON_BG, fg=BUTTON_FG, relief="flat", bd=0)
-llm_menu.pack(side='left')
-# ========================================
-# ==========
-# PROMPT ENTRY FIELD
-# The text right above the user input line for asking llm a question
-prompt_label = tk.Label(
-    window,
-    text="Enter AI Prompt:",
+
+_ = tk.Label(
+    llm_model_frame, 
+    text="LLM Model:", 
     font=FONT_LABEL,
-    bg=BG_COLOR,
+    bg=BG_COLOR, 
+    fg=FG_COLOR
+).pack(side='left', padx=(20, 5))
+
+llm_menu = tk.OptionMenu(llm_model_frame, 
+                         llm_model_var, 
+                         *LLM_MODELS)
+
+llm_menu.config(font=FONT_LABEL, 
+                bg=BUTTON_BG, 
+                fg=BUTTON_FG,
+                relief="flat", 
+                bd=0)
+
+llm_menu.pack(side='left')
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 8) PROMPT ENTRY FIELD
+# ════════════════════════════════════════════════════════════════════════════════
+# Label above entry box
+prompt_label = tk.Label(
+    window, 
+    text="Enter AI Prompt:",
+    font=FONT_LABEL, 
+    bg=BG_COLOR, 
     fg=FG_COLOR
 )
-prompt_label.pack(anchor='w', padx=20)
-# ========================================
+prompt_label.pack(anchor='w', padx=20)      # Align west (left)
+
+# Single‑line Entry widget where user types their prompt
 question_entry = tk.Entry(
     window,
     font=FONT_ENTRY,
-    bg=ENTRY_BG,
+    bg=ENTRY_BG, 
     fg=ENTRY_FG,
-    insertbackground=ENTRY_FG,
-    relief='flat',
+    insertbackground=ENTRY_FG,              # Caret colour (matches text)
+    relief='flat', 
     bd=0
 )
-# ========================================
 question_entry.pack(fill='x', padx=20, pady=(0, 10))
-question_entry.focus()
-# ========================================
-# ========================================
-from utils.io_helpers import on_send
-# SEND BUTTON
-# on_send function in io_helpers
+question_entry.focus()                      # Auto‑focus for typing convenience
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 9) SEND BUTTON — triggers the AI call
+# ════════════════════════════════════════════════════════════════════════════════
+from utils.io_helpers import on_send        # Import inside file to avoid cycles
+
 send_button = tk.Button(
     window,
-    text="Send AI Request ▶",
+    text="Send AI Request ▶",               # ▶ char for play/submit
     font=FONT_LABEL,
-    bg=BUTTON_BG,
+    bg=BUTTON_BG, 
     fg=BUTTON_FG,
-    relief='flat',
+    relief='flat', 
     bd=0,
     command=lambda: on_send(
         output_widget=output_area,
@@ -179,61 +261,60 @@ send_button = tk.Button(
     )
 )
 send_button.pack(pady=(0, 10))
-# ========================================
-# ==========
-# OUTPUT AREA
-# ==========
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 10) OUTPUT AREA — Scrollable text view (read‑only)
+# ════════════════════════════════════════════════════════════════════════════════
 output_area = scrolledtext.ScrolledText(
     window,
-    wrap=tk.WORD,
+    wrap=tk.WORD,                           # Wrap at word boundaries
     font=FONT_TEXT,
-    bg=TEXT_BG,
+    bg=TEXT_BG, 
     fg=TEXT_FG,
     insertbackground=TEXT_FG,
-    relief='flat',
+    relief='flat', 
     bd=0
 )
-# ------------------
-output_area.config(state='disabled')
+output_area.config(state='disabled')         # Start read‑only (re‑enabled on write)
 output_area.pack(fill='both', expand=True, padx=20, pady=(0, 20))
-# ========================================
-# ==========
-# EXPORT BUTTONS
-# ==========
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 11) EXPORT BUTTONS  (TXT & PDF)
+# ════════════════════════════════════════════════════════════════════════════════
 exp_frame = tk.Frame(window, bg=BG_COLOR)
 exp_frame.pack(pady=(0, 20))
-# ========================================
-tk.Button(
-    exp_frame,
-    text="Export as TXT",
-    font=FONT_LABEL,
-    bg=BUTTON_BG,
-    fg=BUTTON_FG,
-    relief='flat',
-    bd=0,
-    command=lambda: export_txt_widget(output_area)
+
+# ↳ TXT
+_ = tk.Button(
+        exp_frame, 
+        text="Export as TXT", 
+        font=FONT_LABEL,
+        bg=BUTTON_BG, 
+        fg=BUTTON_FG,
+        relief='flat', 
+        bd=0,
+        command=lambda: export_txt_widget(output_area)
 ).pack(side='left', padx=10)
-# ========================================
-tk.Button(
-    exp_frame,
-    text="Export as PDF",
-    font=FONT_LABEL,
-    bg=BUTTON_BG,
-    fg=BUTTON_FG,
-    relief='flat',
-    bd=0,
-    command=lambda: export_pdf_widget(output_area)
+
+# ↳ PDF
+_ = tk.Button(
+        exp_frame, text="Export as PDF", font=FONT_LABEL,
+        bg=BUTTON_BG, fg=BUTTON_FG,
+        relief='flat', bd=0,
+        command=lambda: export_pdf_widget(output_area)
 ).pack(side='left', padx=10)
-# ========================================
-# ==========
-# MAIN LOOP
-# ==========
-#window.mainloop()
+
+# ════════════════════════════════════════════════════════════════════════════════
+# 12) MAIN EVENT LOOP
+# ════════════════════════════════════════════════════════════════════════════════
+# You may call ``run_app()`` from another script instead of executing this file
+# directly.  The explicit ``window.mainloop()`` below is commented‑out so plugins or
+# unit‑tests can import this module without an immediate blocking event loop.
+
 def run_app():
+    """Convenience wrapper → start Tk event loop."""
     window.mainloop()
 
 if __name__ == "__main__":
+    # When executed as ``python aiGuiUbuntu.py`` run the GUI immediately.
     run_app()
-# ========================================
-# ========================================
-# ========================================

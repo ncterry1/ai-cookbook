@@ -17,20 +17,23 @@ No global state: each function accepts the widget to export, ensuring reusabilit
 
 import textwrap
 from pathlib import Path
+import tkinter as tk
+import importlib
 from tkinter import filedialog
 from reportlab.pdfgen import canvas
+# Need these 3 below to move back one directory to import associated modules
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from config import (
     PDF_PAGE_WIDTH,
     PDF_PAGE_HEIGHT,
     PDF_MARGIN_INCH,
     PDF_FONT,
     PDF_FONT_SIZE,
-    PDF_LINE_SPACING, OPENAI_API_BASE, OPENAI_API_KEY, OPENAI_DEFAULT_MODEL, BG_COLOR, FG_COLOR, HEADER_BG, BUTTON_BG, BUTTON_FG, ENTRY_BG, ENTRY_FG, TEXT_BG, TEXT_FG, FONT_ENTRY, FONT_TEXT, FONT_HEADER, FONT_LABEL, BASE_DIR, IMAGES_DIR, ICON_FILENAMES, WINDOW_TITLE, DEFAULT_VENV
+    PDF_LINE_SPACING, OPENAI_API_BASE, OPENAI_API_KEY, OPENAI_DEFAULT_MODEL, BG_COLOR, FG_COLOR, HEADER_BG, BUTTON_BG, BUTTON_FG, ENTRY_BG, ENTRY_FG, TEXT_BG, TEXT_FG, FONT_ENTRY, FONT_TEXT, FONT_HEADER, FONT_LABEL, BASE_DIR, IMAGES_DIR, ICON_FILENAMES, WINDOW_TITLE, DEFAULT_VENV, AVAILABLE_MODES
 )
 # for on_send
-import tkinter as tk
-import importlib
-from config import AVAILABLE_MODES            # or wherever you kept that dict
 from ai_functions.llm_client import ask       # or your call_ai_function, depending on design
 
 '''=============================
