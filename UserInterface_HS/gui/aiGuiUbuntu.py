@@ -7,23 +7,24 @@ Leverages a custom LLM for Q&A and data analysis.
 # ==========
 # IMPORTS
 # ==========
-import os
 import importlib
-import config
-from pathlib import Path
-import tkinter as tk
-from tkinter import scrolledtext
-import platform
-import openai
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from ai_functions.qa import run_qa
+import config as config
+import platform
+from pathlib import Path
 
-# Force reload config for interactive scenarios
-importlib.reload(config)
+import tkinter as tk
+from tkinter import scrolledtext, filedialog
+import openai
+#==========================
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+#==========================
+import ai_functions.llm_client as llm_client
+#llm_client.configure()
+from utils.io_helpers import export_txt_widget, export_pdf_widget, on_send
 
 from config import (
     # Theme & UI
@@ -38,13 +39,10 @@ from config import (
     # Paths
     BASE_DIR, IMAGES_DIR,
     # PDF export settings
-    PDF_PAGE_SIZE, PDF_MARGIN_INCH,
+    PDF_MARGIN_INCH,
     PDF_FONT, PDF_FONT_SIZE, PDF_LINE_SPACING,
 )
 
-from utils.io_helpers import export_txt_widget, export_pdf_widget
-# If your system has more than one model to send request to
-from config import LLM_MODELS
 # ==========
 # WINDOW SETUP
 # ==========
@@ -82,7 +80,6 @@ if "errorIcon" in icons:
 # Map friendly mode names to module import paths
 AVAILABLE_MODES = {
     "Q&A": "ai_functions.qa",
-    "Data Analysis": "ai_functions.data_analysis",
 }
 # ===========
 # CALL AI FUNCTION
@@ -117,32 +114,61 @@ hdr_kwargs = {
 }
 if 'lockIcon' in icons:
     hdr_kwargs.update(image=icons['lockIcon'], compound='left')
+
 header_label = tk.Label(header_frame, **hdr_kwargs)
 header_label.pack()
 
 # ===========
 # MODE SELECTOR
 # ===========
-mode_label = tk.Label(window, text="AI Mode:", font=FONT_LABEL, bg=BG_COLOR, fg=FG_COLOR)
-mode_label.pack(pady=(10, 5))
 mode_var = tk.StringVar(value="Q&A")
-mode_menu = tk.OptionMenu(window, mode_var, *AVAILABLE_MODES.keys())
-mode_menu.config(font=FONT_LABEL, bg=BUTTON_BG, fg=BUTTON_FG, relief="flat", bd=0)
-mode_menu.pack(pady=(0, 10))
+mode_frame = tk.Frame(window, bg=BG_COLOR)
+mode_frame.pack(pady=(10,0))
+_ = tk.Label(
+    mode_frame, 
+    text="AI Mode:", 
+    font=FONT_LABEL, 
+    bg=BG_COLOR, 
+    fg=FG_COLOR).pack(side='left', padx=(20, 5))
+
+mode_menu = tk.OptionMenu(
+    mode_frame, 
+    mode_var, 
+    *AVAILABLE_MODES.keys())
+mode_menu.config(
+    font=FONT_LABEL, 
+    bg=BUTTON_BG, 
+    fg=BUTTON_FG, 
+    relief="flat", 
+    bd=0)
+mode_menu.pack(side='left')
 # ==========
 # LLM MODEL SELECTOR
 # ==========
-tk.Label(window,
-         text="LLM Model:",
-         font=FONT_LABEL,
-         bg=BG_COLOR,
-         fg=FG_COLOR
-).pack(pady=(5, 0))
 # -------------------------------
 llm_model_var = tk.StringVar(value=LLM_DEFAULT_MODEL)
-llm_menu = tk.OptionMenu(window, llm_model_var, *LLM_MODELS)
-llm_menu.config(font=FONT_LABEL, bg=BUTTON_BG, fg=BUTTON_FG, relief="flat", bd=0)
-llm_menu.pack(pady=(0, 10))
+llm_model_frame = tk.Frame(window, bg=BG_COLOR)
+llm_model_frame.pack(pady=(10,0))
+_ = tk.Label(
+    llm_model_frame,
+    text="LLM Model:",
+    font=FONT_LABEL,
+    bg=BG_COLOR,
+    fg=FG_COLOR
+).pack(side='left', padx=(20, 5))
+
+llm_menu = tk.OptionMenu (
+    llm_model_frame, 
+    llm_model_var, 
+    LLM_DEFAULT_MODEL)
+
+llm_menu.config(
+    font=FONT_LABEL, 
+    bg=BUTTON_BG, 
+    fg=BUTTON_FG, 
+    relief="flat", 
+    bd=0)
+llm_menu.pack(side='left')
 # ===========
 # PROMPT ENTRY FIELD
 # ===========
@@ -166,61 +192,6 @@ question_entry = tk.Entry(
 question_entry.pack(fill='x', padx=20, pady=(0, 10))
 question_entry.focus()
 
-# ===========
-# SEND BUTTON CALLBACK
-# ===========
-def on_send() -> None:
-    # Triggered by Send button or Enter key
-    user_prompt = question_entry.get().strip()
-    if not user_prompt:
-        return
-    # Display placeholder
-    output_area.config(state='normal')
-    output_area.delete('1.0', tk.END)
-    # -------------------------------------
-    # Insert mainIcon if available
-    if "mainIcon" in icons:
-        output_area.image_create(tk.END, image=icons["mainIcon"])
-        output_area.insert(tk.END, " ")
-    placeholder_text = f"🔍 {mode_var.get()} AI Prompt:\n{user_prompt}\n\n⏳ Thinking..."
-    output_area.insert(tk.END, placeholder_text)
-    # -------------------------------------
-    # Insert thinking icon or emoji
-    if "clockicon" in icons:
-        output_area.image_create(tk.END, image=icons["clockicon"])
-        output_area.insert(tk.END, " Thinking…")
-    else:
-        output_area.insert(tk.END, "⏳ Thinking…")
-    output_area.config(state="disabled")
-    window.update_idletasks()
-    # -------------------------------------
-    # 3) Reconfigure the LLM client with the chosen model
-    # Just make sure that call happens before you ever invoke llm_client.ask()
-    import ai_functions.llm_client as llm_client
-    llm_client.confgure (
-        api_key=LLM_API_KEY,
-        base_url=LLM_BASE_URL,
-        default_model=llm_model_var.get()
-    )
-    # -------------------------------------
-    # 4) Call the AI function and handle errors
-    is_error = False
-    try:
-        ai_result = call_ai_function(mode_var.get(), user_prompt)
-    except Exception:
-        is_error = True
-        ai_result = ""  # errorIcon will indicate failure
-
-    # Display the AI result or error icon
-    output_area.config(state="normal")
-    output_area.delete("1.0", tk.END)
-    if is_error and "errorIcon" in icons:
-        output_area.image_create(tk.END, image=icons["errorIcon"])
-        output_area.insert(tk.END, " ")
-        output_area.insert(tk.END, ai_result)
-    else:
-        output_area.insert(tk.END, ai_result)
-    output_area.config(state="disabled")
 
 # ===========
 # SEND BUTTON

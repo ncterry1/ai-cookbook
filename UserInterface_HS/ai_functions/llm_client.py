@@ -5,11 +5,18 @@ Provides a configure() to initialize the OpenAI wrapper client,
 and ask() (aliased as run) to perform chat completions.
 """
 
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from config import (
+    LLM_API_KEY, 
+    LLM_BASE_URL, 
+    LLM_DEFAULT_MODEL, )
 from openai import OpenAI
 import httpx
 from pathlib import Path
-from config import LLM_API_KEY, LLM_BASE_URL, LLM_DEFAULT_MODEL
-
+import openai
 # Module-level state
 _client = None
 _default_model = None
@@ -17,6 +24,10 @@ _default_model = None
 # ----------
 # CONFIGURE CLIENT
 # ----------
+openai.api_key = LLM_API_KEY
+openai.api_base = LLM_BASE_URL
+
+'''
 def configure(
     api_key: str = LLM_API_KEY,
     base_url: str = LLM_BASE_URL,
@@ -34,11 +45,11 @@ def configure(
         base_url=base_url.rstrip('/'),
         http_client=httpx.Client(verify=str(verify_pem))
     )
-
+'''
 # ----------
 # ASK / RUN
 # ----------
-def ask(prompt: str, model: str | None = None, **params) -> str:
+def ask(prompt: str, model: str = LLM_DEFAULT_MODEL, **params) -> str:
     """
     Send a chat completion request using the configured client.
     Raises RuntimeError if configure() has not been called.

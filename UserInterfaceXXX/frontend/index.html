@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Graph LLM WebUI</title>
+  <style>
+    #output {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 1em;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      margin-top: 1em;
+      min-height: 100px;
+    }
+    body {
+      margin: 0;
+      padding: 1em;
+      font-family: sans-serif;
+    }
+    textarea, button {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ask the AI</h1>
+  <textarea id="prompt" rows="4" placeholder="Enter prompt..." style="width:100%;"></textarea>
+  <button id="ask-btn" onclick="ask()" style="margin-top:0.5em;">Ask</button>
+  <pre id="output"></pre>
+  
+  <script>
+    async function ask() {
+      const promptField = document.getElementById("prompt");
+      const outputField = document.getElementById('output');
+      const askButton = document.getElementById('ask-btn');
+
+      // Disable button and show thinking message
+      askButton.disabled = true;
+      outputField.textContent = "⏳ Thinking...";
+
+      try {
+        const prompt = promptField.value;
+        const res = await fetch('/api/ask', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        outputField.textContent = data.response;
+      } catch (error) {
+        outputField.textContent = `❌ An error occurred: ${error.message}`;
+      } finally {
+        // Re-enable button
+        askButton.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

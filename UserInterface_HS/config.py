@@ -1,6 +1,8 @@
 # config.py
 
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from pathlib import Path
 from dotenv import load_dotenv
 from reportlab.lib.pagesizes import letter   # provides a (width, height) tuple
@@ -22,12 +24,14 @@ if not (LLM_API_KEY and LLM_BASE_URL and LLM_DEFAULT_MODEL):
 # ============================================
 # For if a user has more than one model to send AI request to
 # This is a sample and not complete for HS
-LLM_MODELS = [
-    "Llama-4-Scout-17B-16E-Instruct:latest",
-    "llama (not complte)",
-    "Mistral (not complete)",
-    "gemma-2 (not complete)"
-]
+#LLM_MODELS = [
+#    "gpt-3.5-turbo",
+#    "gpt-4",
+#    "Llama-4-Scout-17B-16E-Instruct:latest",
+#    "llama (not complte)",
+#    "Mistral (not complete)",
+#    "gemma-2 (not complete)"
+#]
 # ============================================
 # ===========
 # 2) THEME COLORS & FONTS
