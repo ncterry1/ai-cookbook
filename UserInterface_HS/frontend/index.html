@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Graph LLM WebUI</title>
+  <style>
+    /* Wrap long lines within the viewport */
+    #output {
+      white-space: pre-wrap;      /* Preserve whitespace and wrap text */
+      word-wrap: break-word;      /* Break long words if necessary */
+      overflow-wrap: break-word;  /* Additional wrapping */
+      width: 100%;                /* Use full width */
+      box-sizing: border-box;     /* Include padding in width */
+      padding: 1em;
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      margin-top: 1em;
+    }
+    body {
+      margin: 0;
+      padding: 1em;
+      font-family: sans-serif;
+    }
+    textarea, button {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <textarea id="prompt" rows="4" placeholder="Enter prompt..." style="width:100%;"></textarea>
+  <button onclick="ask()" style="margin-top:0.5em;">Ask</button>
+  <pre id="output"></pre>
+  <script>
+    async function ask() {
+      const prompt = document.getElementById("prompt").value;
+      const res = await fetch('/api/ask', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ prompt })
+      });
+      const data = await res.json();
+      document.getElementById('output').textContent = data.response;
+    }
+  </script>
+</body>
+</html>

@@ -17,6 +17,9 @@ import platform
 import openai
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from ai_functions.qa import run_qa
 
 # Force reload config for interactive scenarios
@@ -39,7 +42,6 @@ from config import (
     PDF_FONT, PDF_FONT_SIZE, PDF_LINE_SPACING,
 )
 
-from ai_manager import call_ai_function, AVAILABLE_MODES
 from utils.io_helpers import export_txt_widget, export_pdf_widget
 # If your system has more than one model to send request to
 from config import LLM_MODELS
