@@ -1,46 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!--─────────────────────────────────────────────────────────────────────────────
+    Metadata & Responsive Settings
+  ──────────────────────────────────────────────────────────────────────────────-->
   <meta charset="UTF-8">
-  <title>Graph LLM WebUI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local LLM WebUI</title>
+
+  <!--─────────────────────────────────────────────────────────────────────────────
+    Color & Font Definitions
+  ──────────────────────────────────────────────────────────────────────────────-->
   <style>
-    /* Wrap long lines within the viewport */
-    #output {
-      white-space: pre-wrap;      /* Preserve whitespace and wrap text */
-      word-wrap: break-word;      /* Break long words if necessary */
-      overflow-wrap: break-word;  /* Additional wrapping */
-      width: 100%;                /* Use full width */
-      box-sizing: border-box;     /* Include padding in width */
-      padding: 1em;
-      border: 1px solid #ccc;
-      background-color: #f9f9f9;
-      margin-top: 1em;
+    :root {
+      --bg: #1f2937;         /* dark slate gray */
+      --fg: #cbd5e1;         /* light steel gray */
+      --accent: #3b82f6;     /* bright blue */
+      --error: #f87171;      /* light red for errors */
+      --input-bg: #374151;   /* medium gray */
+      --border: #4b5563;     /* muted gray */
+      --header-bg: #111827;  /* very dark navy */
+    }
+
+    /* reset & base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
     body {
-      margin: 0;
-      padding: 1em;
-      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: "Ubuntu Mono", monospace;
+      line-height: 1.4;
+      padding: 1rem;
     }
-    textarea, button {
-      max-width: 100%;
-      box-sizing: border-box;
+
+    /*─────────────────────────────────────────────────────────────────────────────
+      Header
+    ──────────────────────────────────────────────────────────────────────────────*/
+    header {
+      background: var(--header-bg);
+      padding: 1rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    header h1 {
+      font-size: 1.5rem;
+      color: var(--accent);
+    }
+
+    /*─────────────────────────────────────────────────────────────────────────────
+      Main content wrapper
+    ──────────────────────────────────────────────────────────────────────────────*/
+    main {
+      flex: 1;
+      max-width: 800px;
+      width: 100%;
+      margin: 2rem auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      padding: 0 1rem;
+    }
+
+    /*─────────────────────────────────────────────────────────────────────────────
+      Prompt Section
+    ──────────────────────────────────────────────────────────────────────────────*/
+    #prompt-section label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    #prompt {
+      width: 100%;
+      min-height: 120px;
+      background: var(--input-bg);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      font-family: inherit;
+      font-size: 1rem;
+      resize: vertical;
+    }
+
+    /*─────────────────────────────────────────────────────────────────────────────
+      Model Dropdown
+    ──────────────────────────────────────────────────────────────────────────────*/
+    #model-section label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+    #model {
+      width: 100%;
+      padding: 0.5rem;
+      background: var(--input-bg);
+      color: var(--fg);
+      border: 1px solid var(--border);
+      font-family: inherit;
+    }
+
+    /*─────────────────────────────────────────────────────────────────────────────
+      Ask Button
+    ──────────────────────────────────────────────────────────────────────────────*/
+    #ask-btn {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      align-self: flex-start;
+    }
+    #ask-btn:hover:not(:disabled) {
+      background: #60a5fa;
+    }
+    #ask-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /*============ New Output Section ============*/
+    #new-output-section {
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      padding: 1rem;
+      font-family: inherit;
+      min-height: 100px;
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+    /* Word-wrap inside the pre element */
+    #new-output {
+      white-space: pre-wrap;       /* Preserve newlines and wrap text */
+      overflow-wrap: break-word;   /* Break long words */
+      word-wrap: break-word;
+      width: 100%;
+    }
+    /*============ End New Output Section ============*/
+
+    /*─────────────────────────────────────────────────────────────────────────────
+      Footer
+    ──────────────────────────────────────────────────────────────────────────────*/
+    footer {
+      text-align: center;
+      padding: 1rem 0;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: #6b7280;
     }
   </style>
 </head>
 <body>
-  <textarea id="prompt" rows="4" placeholder="Enter prompt..." style="width:100%;"></textarea>
-  <button onclick="ask()" style="margin-top:0.5em;">Ask</button>
-  <pre id="output"></pre>
+  <header>
+    <h1>Local LLM Interface</h1>
+  </header>
+
+  <main>
+    <section id="prompt-section">
+      <label for="prompt">Enter your prompt:</label>
+      <textarea id="prompt" placeholder="Type your query here..."></textarea>
+    </section>
+
+    <section id="model-section">
+      <label for="model">Select LLM Model:</label>
+      <select id="model">
+        <option value="openchat-3.5-0106:latest">openchat-3.5-0106:latest</option>
+        <option value="phi3:latest">phi3:latest</option>
+        <!-- Add other models here -->
+      </select>
+    </section>
+
+    <button id="ask-btn" onclick="askModel()">Ask</button>
+
+    <section id="new-output-section">
+      <h2>New Output</h2>
+      <pre id="new-output"><!-- AI response will appear here --></pre>
+    </section>
+  </main>
+
+  <footer>&copy; 2025 CyberSafe Inc. — Confidential</footer>
+
   <script>
-    async function ask() {
-      const prompt = document.getElementById("prompt").value;
-      const res = await fetch('/api/ask', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ prompt })
-      });
-      const data = await res.json();
-      document.getElementById('output').textContent = data.response;
+    async function askModel() {
+      const prompt = document.getElementById("prompt").value.trim();
+      const model  = document.getElementById("model").value;
+      const newOut = document.getElementById("new-output");
+      const btn    = document.getElementById("ask-btn");
+
+      if (!prompt) {
+        newOut.style.color = 'var(--error)';
+        newOut.textContent = '⚠️ Please enter a prompt.';
+        return;
+      }
+
+      btn.disabled       = true;
+      newOut.style.color = '';
+      newOut.textContent = '⏳ Thinking...';
+
+      try {
+        const resp = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, model })
+        });
+
+        if (!resp.ok) throw new Error(`Server ${resp.status}`);
+
+        const data = await resp.json();
+
+        if (data.response) {
+          newOut.textContent = data.response;
+        } else {
+          throw new Error(data.error || 'No response field');
+        }
+      } catch (err) {
+        newOut.style.color = 'var(--error)';
+        newOut.textContent = `❌ ${err.message}`;
+      } finally {
+        btn.disabled = false;
+      }
     }
   </script>
 </body>

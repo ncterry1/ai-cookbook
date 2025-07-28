@@ -1,3 +1,4 @@
+
 # app.py
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -6,12 +7,13 @@ from neo4j import GraphDatabase
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from ai_functions.llm_client import ask
+from UserInterface_LS.ai_functions.llm_client import ask
 
 class AskRequest(BaseModel):
     prompt: str
 
 app = FastAPI()
+
 # Neo4j driver setup (Bolt)
 driver = GraphDatabase.driver(
     "bolt://localhost:7687",
@@ -40,3 +42,4 @@ async def query_graph(q: str):
 # Serve frontend static files
 from fastapi.staticfiles import StaticFiles
 app.mount("/", StaticFiles(directory="frontend", html=True), name="static")
+

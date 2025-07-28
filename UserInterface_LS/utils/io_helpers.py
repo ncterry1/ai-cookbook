@@ -34,7 +34,7 @@ from config import (
     PDF_LINE_SPACING, OPENAI_API_BASE, OPENAI_API_KEY, OPENAI_DEFAULT_MODEL, BG_COLOR, FG_COLOR, HEADER_BG, BUTTON_BG, BUTTON_FG, ENTRY_BG, ENTRY_FG, TEXT_BG, TEXT_FG, FONT_ENTRY, FONT_TEXT, FONT_HEADER, FONT_LABEL, BASE_DIR, IMAGES_DIR, ICON_FILENAMES, WINDOW_TITLE, DEFAULT_VENV, AVAILABLE_MODES
 )
 # for on_send
-from ai_functions.llm_client import ask       # or your call_ai_function, depending on design
+from UserInterface_LS.ai_functions.llm_client import ask       # or your call_ai_function, depending on design
 
 '''=============================
 ================================

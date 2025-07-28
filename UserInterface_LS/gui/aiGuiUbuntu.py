@@ -39,7 +39,7 @@ from tkinter import scrolledtext           # Convenience widget: Text + Scrollba
 import platform                            # Detect OS for maximise logic
 
 # Project‑specific helpers / wrappers
-from ai_functions.llm_client import ask    # Thin wrapper around OpenAI‑compatible API
+from UserInterface_LS.ai_functions.llm_client import ask    # Thin wrapper around OpenAI‑compatible API
 from utils.io_helpers import (
     export_txt_widget,                     # Save Text widget contents → .txt
     export_pdf_widget                      # Save Text widget contents → paginated PDF
