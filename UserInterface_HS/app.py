@@ -21,11 +21,11 @@ class AskRequest(BaseModel):
     prompt: str
     model: str | None = None
 
-
 # Health check endpoint
 @app.get("/api/health")
 async def health_check():
     return {"status": "ok"}
+
 
 '''
 We are using FastAPI
@@ -57,3 +57,4 @@ app.mount(
     StaticFiles(directory="frontend", html=True),
     name="static"
 )
+
