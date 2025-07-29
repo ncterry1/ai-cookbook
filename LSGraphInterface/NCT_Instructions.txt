@@ -1,0 +1,32 @@
+Step 1: Create and Activate Python Virtual Environment (venv)
+Run in terminal (inside your project folder):
+
+bash
+    python3 -m venv .venv
+    source .venv/bin/activate
+    sudo apt update
+    sudo apt upgrade
+
+Option: Add Neo4j’s APT repo
+Import Neo4j’s GPG key
+
+bash
+    curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key \
+    | sudo gpg --dearmor -o /usr/share/keyrings/neo4j-archive-keyring.gpg
+Add the Neo4j repository
+
+bash
+    echo "deb [signed-by=/usr/share/keyrings/neo4j-archive-keyring.gpg] \
+    https://debian.neo4j.com stable latest" \
+    | sudo tee /etc/apt/sources.list.d/neo4j.list
+Update & install
+
+bash
+    sudo apt update
+    sudo apt install neo4j
+Enable & start
+
+bash
+    sudo systemctl enable --now neo4j
+Visit http://localhost:7474 to finish setup.
+
